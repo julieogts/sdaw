@@ -1,0 +1,2138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Checkout | Sanrico Co.</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/tooltip.css">
+    <link rel="stylesheet" href="css/forms.css">
+    <link rel="stylesheet" href="css/verification-dialog.css">
+    <link rel="stylesheet" href="css/modal.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <link rel="stylesheet" href="css/header.css">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="js/simple-auth-client.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/loginButton.js"></script>
+    <script src="js/login.js"></script>
+    <script src="js/toast.js"></script>
+    <script src="js/navigation.js"></script>
+    <script src="js/headerSearch.js"></script>
+    <script src="js/notifications.js"></script>
+    <script src="js/stockManager.js"></script>
+    <script src="js/validation.js"></script>
+    <script src="js/addressModal.js"></script>
+    
+    <style>
+        .search-container {
+            position: relative;
+            width: 500px; /* Adjust as needed */
+        }
+
+        .search-container input {
+            width: 100%;
+            padding: 12px 48px 12px 16px;
+            border-radius: 8px;
+            border: none;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        .search-btn {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: white;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+            border-radius: 50%;
+            height: 36px;
+            width: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+            z-index: 2;
+        }
+
+        .search-btn:hover {
+            background: #f5f5f5;
+        }
+
+        /* Remove borders from header elements */
+        .top-bar, .header, .main-nav,
+        .top-bar *, .header *, .main-nav *,
+        .container, .header-container, .nav-links,
+        .logo-container, .header-search, .header-icons,
+        .cart-btn, .cart-count, .nav-links a {
+            border: none !important;
+            outline: none !important;
+            box-shadow: none !important;
+        }
+
+        /* Ensure seamless gradient */
+        .top-bar, .header, .main-nav {
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+        .container {
+            margin: 0 auto !important;
+        }
+
+        /* Checkout item styles */
+        .checkout-items-list {
+            margin-bottom: 1rem;
+            max-height: 230px; /* Height for exactly 3 items (48px image + 24px padding) × 3 + container padding */
+            overflow-y: auto;
+            border: 1px solid var(--border-color, #e0e0e0);
+            border-radius: 8px;
+            padding: 0.5rem;
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary, #e63946) var(--light-bg, #f8f9fa);
+        }
+
+        /* Custom scrollbar for webkit browsers */
+        .checkout-items-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .checkout-items-list::-webkit-scrollbar-track {
+            background: var(--light-bg, #f8f9fa);
+            border-radius: 3px;
+        }
+
+        .checkout-items-list::-webkit-scrollbar-thumb {
+            background: var(--primary, #e63946);
+            border-radius: 3px;
+        }
+
+        .checkout-items-list::-webkit-scrollbar-thumb:hover {
+            background: var(--accent, #d62d20);
+        }
+
+        .checkout-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--border-color, #f0f0f0);
+            transition: background-color 0.2s;
+        }
+
+        .checkout-item:last-child {
+            border-bottom: none;
+        }
+
+        .checkout-item:hover {
+            background-color: var(--hover-bg, #f8f9fa);
+        }
+
+        .checkout-item-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex: 1;
+        }
+
+        .checkout-item-image {
+            width: 48px;
+            height: 48px;
+            object-fit: cover;
+            border-radius: 6px;
+            border: 1px solid var(--border-color, #e0e0e0);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .checkout-item-details {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .checkout-item-name {
+            margin: 0 0 0.25rem 0;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text, #333);
+            display: -webkit-box;
+            line-clamp: 2; /* Standard property for compatibility */
+            -webkit-line-clamp: 2; /* Non-standard, works in Chrome/Safari */
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            line-height: 1.3;
+        }
+
+        .checkout-item-meta {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+        }
+
+        .checkout-item-price {
+            font-size: 0.85rem;
+            color: var(--text-muted, #666);
+            font-weight: 500;
+        }
+
+        .checkout-item-qty {
+            font-size: 0.85rem;
+            color: var(--text-muted, #666);
+            font-weight: 500;
+        }
+
+        .checkout-item-total {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--primary, #e63946);
+            white-space: nowrap;
+        }
+
+        .order-items-summary {
+            margin-top: 0.75rem;
+            padding: 0.75rem;
+            background-color: var(--light-bg, #f8f9fa);
+            border-radius: 6px;
+            border: 1px solid var(--border-color, #e0e0e0);
+        }
+
+        .order-items-summary p {
+            margin: 0;
+            font-size: 0.9rem;
+            color: var(--text, #333);
+            text-align: center;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .checkout-items-list {
+                max-height: 190px; /* Adjusted for mobile: 3 items × (40px image + 16px padding) + container padding */
+            }
+            
+            .checkout-item {
+                padding: 0.5rem;
+            }
+            
+            .checkout-item-info {
+                gap: 0.5rem;
+            }
+            
+            .checkout-item-image {
+                width: 40px;
+                height: 40px;
+            }
+            
+            .checkout-item-name {
+                font-size: 0.85rem;
+            }
+            
+            .checkout-item-meta {
+                flex-direction: column;
+                gap: 0.25rem;
+                align-items: flex-start;
+            }
+            
+            .checkout-item-price,
+            .checkout-item-qty {
+                font-size: 0.8rem;
+            }
+            
+            .checkout-item-total {
+                font-size: 0.9rem;
+            }
+        }
+
+        /* Image Upload Styles */
+        .image-upload-section {
+            width: 100%;
+        }
+
+        .drop-zone {
+            border: 2px dashed #e0e0e0;
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        .drop-zone:hover {
+            border-color: #e63946;
+            background: rgba(230, 57, 70, 0.05);
+        }
+
+        .drop-zone-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            opacity: 0.5;
+        }
+
+        .image-preview {
+            position: relative;
+            width: 100%;
+            max-width: 300px;
+            margin: 1rem 0;
+        }
+
+        .image-preview.hidden {
+            display: none;
+        }
+
+        .image-preview img {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .action-btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            margin: 0.25rem;
+        }
+
+        .action-btn.cancel {
+            background: #6c757d;
+            color: white;
+        }
+
+        .action-btn.cancel:hover {
+            background: #5a6268;
+        }
+
+        .action-btn.hidden {
+            display: none;
+        }
+
+        /* Scrollable sections */
+        
+
+        .checkout-card::-webkit-scrollbar {
+            width: 0;
+            display: none;
+        }
+        
+        /* Complete Order Button Styles */
+        .btn-primary {
+            background: linear-gradient(135deg, #e63946 0%, #d62d20 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(230, 57, 70, 0.3);
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #d62d20 0%, #c41e3a 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(230, 57, 70, 0.4);
+        }
+        
+        .btn-primary:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 8px rgba(230, 57, 70, 0.3);
+        }
+        
+        .btn-primary:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* Only billing card is scrollable */
+        .billing-card {
+            max-height: 600px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #e63946 #f8f9fa;
+        }
+
+        .billing-card::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .billing-card::-webkit-scrollbar-track {
+            background: #f8f9fa;
+            border-radius: 3px;
+        }
+
+        .billing-card::-webkit-scrollbar-thumb {
+            background: #e63946;
+            border-radius: 3px;
+        }
+
+        .billing-card::-webkit-scrollbar-thumb:hover {
+            background: #d62d20;
+        }
+
+        dialog {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            margin: 0;
+        }
+
+        /* Add Address Link Styles */
+        .add-address-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--primary, #e63946);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-top: 0.5rem;
+            padding: 0.5rem 0;
+            transition: all 0.3s ease;
+        }
+
+        .add-address-link:hover {
+            color: var(--accent, #d62d20);
+            text-decoration: underline;
+        }
+
+        .add-address-link i {
+            font-size: 0.8rem;
+        }
+
+        /* Toggle Switch Styles */
+        .toggle-switch .toggle-slider {
+            background-color: #dc3545 !important; /* Red for OFF */
+        }
+
+        .toggle-switch input:checked + .toggle-slider {
+            background-color: #28a745 !important; /* Green for ON */
+        }
+
+        .toggle-switch input:checked + .toggle-slider:before {
+            transform: translateX(26px);
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .toggle-switch:hover .toggle-slider {
+            box-shadow: 0 0 8px rgba(40, 167, 69, 0.3); /* Green shadow when hovering over ON state */
+        }
+
+        .toggle-switch input:not(:checked) + .toggle-slider:hover {
+            box-shadow: 0 0 8px rgba(220, 53, 69, 0.3); /* Red shadow when hovering over OFF state */
+        }
+
+        /* Responsive adjustments for payment amount row */
+        @media (max-width: 768px) {
+            .change-delivery-option {
+                padding: 0.5rem 0.75rem !important;
+            }
+            
+            .change-delivery-option > div {
+                flex-direction: column !important;
+                gap: 0.75rem !important;
+                align-items: flex-start !important;
+            }
+        }
+        #orderConfirmDialog::backdrop {
+            background: rgba(0,0,0,0.35);
+        }
+        #orderConfirmDialog {
+            border: none;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(44, 44, 44, 0.18), 0 1.5px 8px rgba(230, 57, 70, 0.08);
+            padding: 2.5rem 2rem 2rem 2rem;
+            max-width: 500px;
+            width: 95vw;
+            text-align: center;
+            font-size: 1.1rem;
+            background: #1d1d1d;
+            z-index: 1002;
+        }
+        #orderConfirmDialog p {
+            margin-bottom: 1.5rem;
+            color: #fff;
+            font-weight: 600;
+            font-size: 1.15rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        #orderConfirmDialog form {
+            display: flex;
+            gap: 1.2rem;
+            justify-content: center;
+        }
+        #orderConfirmDialog button {
+            padding: 0.6rem 1.8rem;
+            border-radius: 8px;
+            border: none;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+        }
+        #orderConfirmDialog button[value="no"] {
+            background: #f1f1f1;
+            color: #444;
+        }
+        #orderConfirmDialog button[value="no"]:hover {
+            background: #e0e0e0;
+        }
+        #orderConfirmDialog button[value="yes"] {
+            background: linear-gradient(135deg, #e63946 0%, #d62d20 100%);
+            color: #fff;
+            box-shadow: 0 2px 8px rgba(230, 57, 70, 0.12);
+        }
+        #orderConfirmDialog button[value="yes"]:hover {
+            background: linear-gradient(135deg, #d62d20 0%, #c41e3a 100%);
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <div class="container">
+            <div class="social-links">
+                <span>Welcome to</span>
+            </div>
+            <div class="user-links">
+                <div class="notification-container">
+                    <button class="notification-btn" id="notificationBtn">
+                        <span class="notification-label">Notifications</span>
+                        <i class="fa fa-bell notification-icon"></i>
+                        <span class="notification-badge" id="notificationBadge">0</span>
+                    </button>
+                    <div class="notification-dropdown" id="notificationDropdown">
+                    <div class="notification-header">
+                        <h3>Notifications</h3>
+                            <button class="clear-all-btn" id="clearAllBtn">Clear All</button>
+                    </div>
+                        <div class="notification-list" id="notificationList">
+                            <!-- Notifications will be populated here -->
+                        </div>
+                    </div>
+                </div>
+                <a href="#" id="topLoginBtn">Login</a>
+                <div id="userDropdown" class="user-dropdown" style="display:none;">
+                    <a href="profile.html" class="dropdown-item">My Account</a>
+                    <a href="order-history.html" class="dropdown-item">Order History</a>
+                    <!-- <a href="#" class="dropdown-item">My Wish List</a> -->
+                    <a href="addresses.html" class="dropdown-item">My Addresses</a>
+                    <a href="#" id="logoutBtn" class="dropdown-item">Log Out</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Header -->
+    <header>
+        <div class="container header-container">
+            <div class="logo-container">
+                <a href="index.html" class="logo-link">
+                    <div class="logo-wrapper" data-tooltip="Take me home">
+                    <img src="images/sanrico_logo_1.png" alt="Sanrico Mercantile Logo" class="logo-img">
+                    </div>
+                    <span class="logo">
+                        <span>Sanrico</span> <span>Mercantile</span>
+                    </span>
+                </a>
+            </div>
+            <form class="header-search">
+                <input type="text" placeholder="Search for products..." />
+                <button type="submit">
+                    <svg width="20" height="20" fill="none" stroke="#e53935" stroke-width="2" viewBox="0 0 24 24">
+                        <circle cx="11" cy="11" r="8"/>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                    </svg>
+                </button>
+            </form>
+            <div class="header-icons">
+                <a href="#" class="cart-btn" id="cartBtn">
+                    <i class="fa fa-shopping-cart"></i>
+                    <span class="cart-count" id="cartCount">0</span>
+                </a>
+                <div class="cart-dropdown" id="cartDropdown" style="display: none;">
+                  <div class="cart-dropdown-content" id="cartDropdownContent">
+                    <!-- Content will be filled by JS -->
+                  </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation Menu -->
+    <nav class="main-nav">
+        <div class="container">
+            <div class="nav-links">
+                <a href="index.html">Home</a>
+                <a href="shop.html">Shop</a>
+                <a href="aboutus.html">About Us</a>
+                <a href="faq.html">FAQ</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Checkout Section -->
+    <section class="checkout-section">
+        <div class="container">
+            <a href="#" class="back-to-profile" onclick="return smartBack();">
+                <i class="fa fa-arrow-left"></i>
+                Back
+            </a>
+            <h2 class="section-title">Checkout</h2>
+            <div class="checkout-container">
+                <!-- Billing and Payment Information -->
+                <div class="checkout-card billing-card">
+                    <h3>Billing Information</h3>
+                    <div class="form-group">
+                        <label for="full-name">Full Name</label>
+                        <input type="text" id="full-name" class="form-control" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" class="form-control" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="address-select">Shipping Address</label>
+                        <select id="address-select" class="form-control">
+                            <option value="">Select an address</option>
+                        </select>
+                        <a href="#" class="add-address-link" id="addAddressLink">
+                            <i class="fa fa-plus"></i>
+                            Add an address
+                        </a>
+                    </div>
+                    <div class="form-group">
+                        <label for="phone-number">Phone Number</label>
+                        <input type="tel" id="phone-number" class="form-control" placeholder="e.g., 09123456789">
+                    </div>
+                    <h3>Payment Information</h3>
+                    <div class="form-group">
+                        <label for="payment-method">Payment Method</label>
+                        <div class="payment-method-row" id="payment-method-row" style="display:flex; gap: 0.5rem; align-items: center;">
+                            <select id="payment-method" class="form-control" style="flex: 0 0 70%; max-width: 70%;">
+                                <option value="bank">Bank Transfer</option>
+                                <option value="gcash">GCash</option>
+                                <option value="cheque">Cheque</option>
+                                <option value="cod">Cash on Delivery</option>
+                            </select>
+                            <select id="payment-type" class="form-control" style="flex: 0 0 30%; max-width: 30%;">
+                                <option value="full">Full Payment</option>
+                                <option value="split">Split Payment</option>
+                            </select>
+                        </div>
+                        <div id="split-percentage-options" style="display:none; margin-top: 0.5rem;">
+                            <label style="display:block; font-size: 0.9rem; color: #555; margin-bottom: 0.25rem;">Split Percentage</label>
+                            <div style="display:flex; gap: 0.5rem; flex-wrap: nowrap; align-items: center;">
+                                <label style="display:inline-flex; align-items:center; gap:6px; border:1px solid #e5e7eb; padding:6px 10px; border-radius:8px; cursor:pointer;">
+                                    <input type="radio" name="split-percent" value="50"> 50%
+                                </label>
+                                <label style="display:inline-flex; align-items:center; gap:6px; border:1px solid #e5e7eb; padding:6px 10px; border-radius:8px; cursor:pointer;">
+                                    <input type="radio" name="split-percent" value="60"> 60%
+                                </label>
+                                <label style="display:inline-flex; align-items:center; gap:6px; border:1px solid #e5e7eb; padding:6px 10px; border-radius:8px; cursor:pointer;">
+                                    <input type="radio" name="split-percent" value="75"> 75%
+                                </label>
+                                <label style="display:inline-flex; align-items:center; gap:6px; border:1px solid #e5e7eb; padding:6px 10px; border-radius:8px; cursor:pointer;">
+                                    <input type="radio" name="split-percent" value="90"> 90%
+                                </label>
+                                <input id="split-percent-custom" type="text" placeholder="Custom value" 
+                                       style="height:36px; padding:0 10px; border:1px solid #e5e7eb; border-radius:8px; flex: 1 1 auto; min-width: 140px;"
+                                       inputmode="decimal" pattern="^\\d+(?:\\.\\d+)?$">
+                            </div>
+                        </div>
+                        <!-- Split Payment Breakdown -->
+                        <div id="split-payment-breakdown" style="display:none; margin-top: 1rem; padding: 1rem; background: #f8f9fa; border-radius: 8px; border: 1px solid #e9ecef;">
+                            <h4 style="margin: 0 0 0.75rem 0; font-size: 1rem; color: #495057; display: flex; align-items: center; gap: 0.5rem;">
+                                Split Payment Breakdown
+                                <span style="display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; border-radius: 50%; background: #fff; color: #6b7280; font-size: 11px; font-weight: 700; border: 1px solid #d1d5db; cursor: help; user-select: none;" title="This shows how your payment will be split between what you pay now and what you'll pay upon delivery.">?</span>
+                            </h4>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                <div style="padding: 0.75rem; background: #e3f2fd; border-radius: 6px; border-left: 4px solid #2196f3;">
+                                    <div style="font-size: 0.85rem; color: #666; margin-bottom: 0.25rem;">Pay Now</div>
+                                    <div id="split-pay-now" style="font-size: 1.1rem; font-weight: 600; color: #1976d2;">₱0.00</div>
+                                    <div style="font-size: 0.75rem; color: #666; margin-top: 0.25rem;" id="split-pay-now-percent">0%</div>
+                                </div>
+                                <div style="padding: 0.75rem; background: #fff3e0; border-radius: 6px; border-left: 4px solid #ff9800;">
+                                    <div style="font-size: 0.85rem; color: #666; margin-bottom: 0.25rem;">Balance on Delivery</div>
+                                    <div id="split-balance-delivery" style="font-size: 1.1rem; font-weight: 600; color: #f57c00;">₱0.00</div>
+                                    <div style="font-size: 0.75rem; color: #666; margin-top: 0.25rem;" id="split-balance-percent">0%</div>
+                                </div>
+                            </div>
+                            <div style="margin-top: 0.75rem; padding: 0.5rem; background: #e8f5e8; border-radius: 4px; border-left: 3px solid #4caf50;">
+                                <div style="font-size: 0.8rem; color: #2e7d32;">
+                                    <strong>Note:</strong> You'll pay the "Pay Now" amount immediately, and the "Balance on Delivery" amount when your order is delivered.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="payment-reference">Payment Reference</label>
+                        <input type="text" id="payment-reference" class="form-control" placeholder="Enter payment reference number">
+                    </div>
+                    <div class="form-group">
+                        <label for="payment-amount">Payment Amount</label>
+                        <input type="number" id="payment-amount" class="form-control" placeholder="Enter payment amount" step="0.01" min="0">
+                        <div class="change-delivery-option" style="margin-top: 0.75rem; padding: 0.75rem 1rem; background: #f8f9fa; border-radius: 8px; border: 1px solid #e9ecef;">
+                            <div style="display: flex; align-items: center; justify-content: space-between;">
+                                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <span style="font-weight: 500; color: #495057;">Change upon delivery</span>
+                                    <span style="display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; border-radius: 50%; background: #fff; color: #6b7280; font-size: 11px; font-weight: 700; border: 1px solid #d1d5db; cursor: help; user-select: none;" title="If enabled, allows you to enter a higher payment amount to receive change upon delivery. This is useful when you want to pay with a larger bill and receive exact change.">?</span>
+                                </div>
+                                <label class="toggle-switch" style="position: relative; display: inline-block; width: 50px; height: 24px;">
+                                    <input type="checkbox" id="change-delivery" style="opacity: 0; width: 0; height: 0;">
+                                    <span class="toggle-slider" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; transition: .4s; border-radius: 24px;"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Proof of Payment:</label>
+                        <div class="image-upload-section">
+                            <div class="drop-zone" id="dropZone">
+                                <div class="drop-zone-content">
+                                    <div class="upload-icon">📁</div>
+                                    <p>Drag and drop payment proof image here or click to browse</p>
+                                    <input type="file" id="fileInput" accept="image/*" hidden>
+                                </div>
+                                <div class="image-preview hidden" id="imagePreview">
+                                    <img id="previewImg" src="images/sanrico_logo_1.png" alt="Preview">
+                                </div>
+                            </div>
+                            <button type="button" class="action-btn cancel hidden" id="removeImageBtn">Remove Image</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Order Summary -->
+                <div class="checkout-card">
+                    <h3>Order Summary</h3>
+                    <div class="order-items" id="orderItems">
+                        <!-- Order items will be populated by JavaScript -->
+                    </div>
+                    <div class="summary-row">
+                        <span>Subtotal</span>
+                        <span id="subtotal">₱0.00</span>
+                    </div>
+                    <div class="summary-row">
+                        <span style="display:flex; align-items:center; gap:4px;" title="This is calculated based from your distance and fees during the delivery process.">
+                            Delivery Fee
+                            <span style="display:inline-flex; align-items:center; justify-content:center; width:14px; height:14px; border-radius:50%; background:#fff; color:#6b7280; font-size:10px; font-weight:700; border:1px solid #d1d5db; cursor:help; user-select:none; pointer-events:none;">?</span>
+                        </span>
+                        <span id="deliveryFee">₱0.00</span>
+                    </div>
+                    <div class="summary-row" id="split-delivery-row" style="display:none;">
+                        <span style="display:flex; align-items:center; gap:4px;" title="This amount will be paid upon delivery for split payment orders.">
+                            Split (On Delivery)
+                            <span style="display:inline-flex; align-items:center; justify-content:center; width:14px; height:14px; border-radius:50%; background:#fff; color:#6b7280; font-size:10px; font-weight:700; border:1px solid #d1d5db; cursor:help; user-select:none; pointer-events:none;">?</span>
+                        </span>
+                        <span id="splitDeliveryAmount">₱0.00</span>
+                    </div>
+                    <div class="summary-row total">
+                        <span>Total</span>
+                        <span id="total">₱0.00</span>
+                    </div>
+                    <div class="notes">
+                        <label for="notes-display">Additional Notes</label>
+                        <textarea id="notes-display" class="form-control" placeholder="Insert additional notes for your order here (optional)"></textarea>
+                    </div>
+                    
+                    <!-- Complete Order Button -->
+                    <div class="form-group" style="margin-top: 1.5rem;">
+                        <button type="button" id="completeOrderBtn" class="btn btn-primary" style="width: 100%; padding: 1rem; font-size: 1.1rem; font-weight: 600;">
+                            Complete Order
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-container">
+                <div class="footer-col">
+                    <h4>Shop</h4>
+                    <ul>
+                        <li><a href="shop.html?category=power-tools">Power Tools</a></li>
+                        <li><a href="shop.html?category=hand-tools">Hand Tools</a></li>
+                        <li><a href="shop.html?category=plumbing">Plumbing</a></li>
+                        <li><a href="shop.html?category=electrical">Electrical</a></li>
+                        <li><a href="shop.html?category=building-materials">Building Materials</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Information</h4>
+                    <ul>
+                        <li><a href="aboutus.html">About Us</a></li>
+                        <li><a href="faq.html">FAQ</a></li>
+                        <li><a href="profile.html">User Info</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="order-history.html">Order History</a></li>
+                        <li><a href="addresses.html">My Addresses</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Contact Us</h4>
+                    <ul>
+                        <li>Regalado Avenue</li>
+                        <li>Fairview, Quezon City</li>
+                        <li>Phone: (555) 123-4567</li>
+                        <li>Email: <a href="mailto:support@sanricomercantile@gmail.com">support@sanricomercantile@gmail.com</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="copyright">
+                © 2025 Sanrico Mercantile Inc. All Rights Reserved.
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Lightweight smart back: go to the most recent different page; fallback to index
+        function smartBack() {
+            try {
+                const current = window.location.href;
+                const ref = document.referrer || '';
+                if (ref && new URL(ref, location.origin).href !== new URL(current, location.origin).href) {
+                    window.history.back();
+                    return false;
+                }
+                const stack = JSON.parse(sessionStorage.getItem('recentPages') || '[]');
+                const target = (stack || []).find(p => {
+                    try { return new URL(p, location.origin).href !== new URL(current, location.origin).href; } catch(_) { return p !== current; }
+                });
+                if (target) {
+                    window.location.href = target;
+                    return false;
+                }
+            } catch (_) {}
+            window.location.href = 'index.html';
+            return false;
+        }
+
+        // Track recent pages (dedup, cap 10)
+        (function trackRecentPages(){
+            try {
+                const key = 'recentPages';
+                const current = window.location.href;
+                let stack = [];
+                try { stack = JSON.parse(sessionStorage.getItem(key) || '[]'); } catch(_) { stack = []; }
+                if (!stack.length || stack[0] !== current) {
+                    stack.unshift(current);
+                    stack = stack.filter((url, idx, arr) => arr.indexOf(url) === idx);
+                    if (stack.length > 10) stack = stack.slice(0, 10);
+                    sessionStorage.setItem(key, JSON.stringify(stack));
+                }
+            } catch(_) {}
+        })();
+        console.log('Checkout script starting...');
+        
+        // Check if logged in as staff and redirect if needed
+        if (Auth.redirectIfStaff()) {
+            // Stop further execution if redirecting
+            throw new Error('Redirecting to staff dashboard');
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('DOMContentLoaded event fired');
+            
+            // Redirect to home if not logged in
+            if (typeof Auth !== 'undefined' && !Auth.isLoggedIn()) {
+                console.log('User not logged in, redirecting to index.html');
+                window.location.href = 'index.html';
+                return;
+            }
+            
+            console.log('User is logged in, continuing with page setup');
+
+            // Initialize on page load
+            const currentUser = Auth.getCurrentUser();
+            if (currentUser) {
+                // Update login/signup buttons based on auth state
+                const topLoginBtn = document.getElementById('topLoginBtn');
+                if (topLoginBtn) {
+                    topLoginBtn.textContent = currentUser.fullName || 'My Account';
+                    topLoginBtn.href = currentUser.isStaff ? 'staff-dashboard.html' : 'profile.html';
+                    topLoginBtn.removeEventListener('click', showLoginModal);
+                }
+            }
+
+            // Modal functions are now handled by js/login.js centrally
+
+            // Top bar login/signup handlers are now handled by login.js
+
+            // Initialize cart and get current user
+            window.myCart = new Cart();
+
+            if (!currentUser) {
+                console.error('No current user found.');
+                showToast('Please log in to proceed with checkout.');
+                setTimeout(() => {
+                    window.location.href = 'cart.html';
+                }, 2000);
+                return;
+            }
+
+            // Redirect to home if cart is empty
+            if (!window.myCart.items || window.myCart.items.length === 0) {
+                try { if (typeof showToast === 'function') showToast('Your cart is empty.'); } catch (e) {}
+                window.location.replace('index.html');
+                return;
+            }
+
+            // Load billing information
+            const fullNameInput = document.getElementById('full-name');
+            const emailInput = document.getElementById('email');
+            const notesInput = document.getElementById('notes-display');
+            const addressSelect = document.getElementById('address-select');
+
+            fullNameInput.value = currentUser.fullName || 'N/A';
+            emailInput.value = currentUser.email || 'N/A';
+            
+            // Load user addresses into dropdown (from MongoDB, default first)
+            async function populateAddresses() {
+                addressSelect.innerHTML = '<option value="">Select an address</option>';
+                const addresses = await Auth.getUserAddressesFromDB(currentUser.id);
+                if (addresses.length > 0) {
+                    addresses.forEach((address, index) => {
+                    const option = document.createElement('option');
+                        option.value = address.id || address._id || index;
+                        // Format: [Label] Street, Barangay, City, Province, PostalCode
+                        option.textContent = `${address.label ? `[${address.label}] ` : ''}${address.streetAddress}, ${address.barangay}, ${address.city}, ${address.province}, ${address.postalCode}`;
+                        if (address.isDefault) option.textContent += ' (Default)';
+                    addressSelect.appendChild(option);
+                });
+            }
+            }
+            
+            // Call populateAddresses immediately
+            populateAddresses();
+            
+            const savedPhone = Auth.getUserPhone(currentUser.id);
+            document.getElementById('phone-number').value = savedPhone || '';
+            
+            // Display order summary
+            const orderItemsContainer = document.getElementById('orderItems');
+            const subtotalElement = document.getElementById('subtotal');
+            const totalElement = document.getElementById('total');
+
+            if (!myCart.items || myCart.items.length === 0) {
+                console.warn('Cart is empty or items not loaded.');
+                orderItemsContainer.innerHTML = '<p>Your cart is empty. <a href="shop.html">Continue Shopping</a></p>';
+            } else {
+                orderItemsContainer.innerHTML = `
+                    <div class="checkout-items-list">
+                        ${myCart.items.map(item => `
+                            <div class="checkout-item">
+                                <div class="checkout-item-info">
+                                    <img src="${item.image || 'images/sanrico_logo_1.png'}" 
+                                         alt="${item.name}"
+                                         class="checkout-item-image"
+                                         onerror="this.src='images/sanrico_logo_1.png'">
+                                    <div class="checkout-item-details">
+                                        <h4 class="checkout-item-name">${item.name || 'Unknown Product'}</h4>
+                                        <div class="checkout-item-meta">
+                                            <span class="checkout-item-price">₱${item.price.toFixed(2)}</span>
+                                            <span class="checkout-item-qty">Qty: ${item.quantity || 1}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="checkout-item-total">
+                                    ₱${(item.price * (item.quantity || 1)).toFixed(2)}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="order-items-summary">
+                        <p><strong>Total Items:</strong> ${myCart.items.length} | <strong>Total Units:</strong> ${myCart.items.reduce((sum, item) => sum + (item.quantity || 1), 0)}</p>
+                    </div>
+                `;
+            }
+
+            // Update summary using the new function
+            updateOrderSummaryTotals();
+
+            // Handle split payment UI
+            const paymentTypeEl = document.getElementById('payment-type');
+            const splitOpts = document.getElementById('split-percentage-options');
+            const splitBreakdown = document.getElementById('split-payment-breakdown');
+            
+            function refreshSplitVisibility() {
+                if (!paymentTypeEl || !splitOpts || !splitBreakdown) return;
+                const isSplit = paymentTypeEl.value === 'split';
+                splitOpts.style.display = isSplit ? 'block' : 'none';
+                splitBreakdown.style.display = isSplit ? 'block' : 'none';
+                
+                // Update order summary totals
+                updateOrderSummaryTotals();
+                
+                if (isSplit) {
+                    updateSplitPaymentBreakdown();
+                }
+            }
+            
+            function updateSplitPaymentBreakdown() {
+                if (!splitBreakdown) return;
+                
+                const total = myCart.getTotal();
+                let selectedPercent = 0;
+                
+                // Get selected percentage
+                const selectedRadio = document.querySelector('input[name="split-percent"]:checked');
+                if (selectedRadio) {
+                    selectedPercent = parseFloat(selectedRadio.value);
+                } else {
+                    const customInput = document.getElementById('split-percent-custom');
+                    if (customInput && customInput.value) {
+                        selectedPercent = parseFloat(customInput.value);
+                    }
+                }
+                
+                if (selectedPercent > 0) {
+                    const payNowAmount = (total * selectedPercent) / 100;
+                    const balanceAmount = total - payNowAmount;
+                    const balancePercent = 100 - selectedPercent;
+                    
+                    document.getElementById('split-pay-now').textContent = `₱${payNowAmount.toFixed(2)}`;
+                    document.getElementById('split-pay-now-percent').textContent = `${selectedPercent}%`;
+                    document.getElementById('split-balance-delivery').textContent = `₱${balanceAmount.toFixed(2)}`;
+                    document.getElementById('split-balance-percent').textContent = `${balancePercent}%`;
+                } else {
+                    document.getElementById('split-pay-now').textContent = '₱0.00';
+                    document.getElementById('split-pay-now-percent').textContent = '0%';
+                    document.getElementById('split-balance-delivery').textContent = `₱${total.toFixed(2)}`;
+                    document.getElementById('split-balance-percent').textContent = '100%';
+                }
+                
+                // Update order summary
+                updateOrderSummaryTotals();
+            }
+            
+            function updateOrderSummaryTotals() {
+                const subtotal = myCart.getSubtotal();
+                const deliveryFee = 0; // hardcoded for now
+                const fullTotal = subtotal + deliveryFee;
+                
+                // Update subtotal and delivery fee
+                document.getElementById('subtotal').textContent = `₱${subtotal.toFixed(2)}`;
+                document.getElementById('deliveryFee').textContent = `₱${deliveryFee.toFixed(2)}`;
+                
+                // Check if split payment is selected
+                const paymentTypeEl = document.getElementById('payment-type');
+                const isSplit = paymentTypeEl && paymentTypeEl.value === 'split';
+                const splitDeliveryRow = document.getElementById('split-delivery-row');
+                
+                if (isSplit) {
+                    // Calculate split amounts
+                    let selectedPercent = 0;
+                    const selectedRadio = document.querySelector('input[name="split-percent"]:checked');
+                    if (selectedRadio) {
+                        selectedPercent = parseFloat(selectedRadio.value);
+                    } else {
+                        const customInput = document.getElementById('split-percent-custom');
+                        if (customInput && customInput.value) {
+                            selectedPercent = parseFloat(customInput.value);
+                        }
+                    }
+                    
+                    if (selectedPercent > 0) {
+                        // Show split delivery row and calculate amounts
+                        splitDeliveryRow.style.display = 'block';
+                        const balanceAmount = fullTotal - ((fullTotal * selectedPercent) / 100);
+                        document.getElementById('splitDeliveryAmount').textContent = `₱${balanceAmount.toFixed(2)}`;
+                        
+                        // Update total to show only the amount being paid now
+                        const payNowAmount = (fullTotal * selectedPercent) / 100;
+                        document.getElementById('total').textContent = `₱${payNowAmount.toFixed(2)}`;
+                    } else {
+                        // If no percentage selected yet, show full total and hide split delivery row
+                        splitDeliveryRow.style.display = 'none';
+                        document.getElementById('total').textContent = `₱${fullTotal.toFixed(2)}`;
+                    }
+                } else {
+                    // Hide split delivery row and show full total
+                    splitDeliveryRow.style.display = 'none';
+                    document.getElementById('total').textContent = `₱${fullTotal.toFixed(2)}`;
+                }
+            }
+            
+            if (paymentTypeEl) {
+                paymentTypeEl.addEventListener('change', refreshSplitVisibility);
+                refreshSplitVisibility();
+            }
+            
+            // Add event listeners for split percentage changes
+            document.querySelectorAll('input[name="split-percent"]').forEach(radio => {
+                radio.addEventListener('change', updateSplitPaymentBreakdown);
+            });
+
+            // Hide/show fields when COD is selected
+            const paymentMethodEl = document.getElementById('payment-method');
+            function setupPaymentMethodVisibility() {
+                if (!paymentMethodEl) return;
+                const isCOD = paymentMethodEl.value === 'cod';
+
+                // Expand payment method dropdown when COD is selected
+                const paymentMethodRow = document.getElementById('payment-method-row');
+                if (paymentMethodRow) {
+                    if (isCOD) {
+                        paymentMethodEl.style.flex = '1';
+                        paymentMethodEl.style.maxWidth = '100%';
+                    } else {
+                        paymentMethodEl.style.flex = '0 0 70%';
+                        paymentMethodEl.style.maxWidth = '70%';
+                    }
+                }
+
+                // Hide split type dropdown when COD
+                if (paymentTypeEl) {
+                    // Hide the select itself
+                    paymentTypeEl.style.display = isCOD ? 'none' : '';
+                }
+                // Hide split extra options entirely
+                if (splitOpts) {
+                    splitOpts.style.display = isCOD ? 'none' : (paymentTypeEl && paymentTypeEl.value === 'split' ? 'block' : 'none');
+                }
+                // Hide split breakdown when COD
+                if (splitBreakdown) {
+                    splitBreakdown.style.display = isCOD ? 'none' : (paymentTypeEl && paymentTypeEl.value === 'split' ? 'block' : 'none');
+                }
+
+                // Hide Payment Reference group
+                const paymentRefEl = document.getElementById('payment-reference');
+                const paymentRefGroup = paymentRefEl ? paymentRefEl.closest('.form-group') : null;
+                if (paymentRefGroup) paymentRefGroup.style.display = isCOD ? 'none' : '';
+
+                // Hide Proof of Payment group
+                const proofSection = document.querySelector('.image-upload-section');
+                const proofGroup = proofSection ? proofSection.closest('.form-group') : null;
+                if (proofGroup) proofGroup.style.display = isCOD ? 'none' : '';
+
+                // Show change upon delivery option for all payment methods
+                const changeDeliveryOption = document.querySelector('.change-delivery-option');
+                if (changeDeliveryOption) {
+                    changeDeliveryOption.style.display = 'block';
+                }
+            }
+            if (paymentMethodEl) {
+                paymentMethodEl.addEventListener('change', setupPaymentMethodVisibility);
+                setupPaymentMethodVisibility();
+            }
+
+            // Validate custom split input
+            const customSplit = document.getElementById('split-percent-custom');
+            if (customSplit) {
+                customSplit.addEventListener('input', () => {
+                    // allow only digits and one optional dot
+                    const cleaned = customSplit.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');
+                    customSplit.value = cleaned;
+                    const val = parseFloat(cleaned);
+                    const digitCount = (cleaned.match(/\d/g) || []).length;
+                    if (!isNaN(val) && digitCount >= 2 && val < 50) {
+                        if (!customSplit.dataset.warnShown) {
+                            if (typeof showToast === 'function') showToast('Custom split must be at least 50%');
+                            customSplit.dataset.warnShown = '1';
+                        }
+                        // Auto-correct immediately to 50 while typing
+                        customSplit.value = '50';
+                        customSplit.style.borderColor = '';
+                        customSplit.style.boxShadow = '';
+                    } else {
+                        customSplit.dataset.warnShown = '';
+                        customSplit.style.borderColor = '';
+                        customSplit.style.boxShadow = '';
+                    }
+                    // Update split payment breakdown
+                    updateSplitPaymentBreakdown();
+                });
+                customSplit.addEventListener('blur', () => {
+                    const val = parseFloat(customSplit.value);
+                    if (isNaN(val)) {
+                        customSplit.value = '';
+                        updateSplitPaymentBreakdown();
+                        return;
+                    }
+                    if (val < 50) {
+                        showToast('Custom split must be at least 50%');
+                        customSplit.value = '50';
+                        customSplit.style.borderColor = '';
+                        customSplit.style.boxShadow = '';
+                    }
+                    // Update split payment breakdown
+                    updateSplitPaymentBreakdown();
+                });
+            }
+
+            // Initialize cart count
+            Auth.updateCartCount();
+
+            // Add address link event listener
+            document.getElementById('addAddressLink').addEventListener('click', function(e) {
+                e.preventDefault();
+                window.AddressModal.show();
+                window.AddressModal.setOnAddressSaved(() => {
+                    showToast('Address added successfully!', 'success');
+                    // Refresh the address dropdown
+                    populateAddresses();
+                });
+            });
+
+            // Listen for cart updates from other pages
+            window.addEventListener('cartUpdated', (event) => {
+                if (event.detail && event.detail.cartData) {
+                    const cartKey = `cart_${currentUser ? currentUser.id : 'guest'}`;
+                    localStorage.setItem(cartKey, JSON.stringify(event.detail.cartData));
+                    // Reload cart and update display
+                    myCart.loadCart();
+                    // Update header cart badge
+                    Auth.updateCartCount();
+                }
+            });
+
+            // Update header cart badge when cart changes locally
+            function updateHeaderCartBadge() {
+                Auth.updateCartCount();
+            }
+
+            // Add cart update event listener for local changes
+            window.addEventListener('storage', (e) => {
+                if (e.key && e.key.startsWith('cart_')) {
+                    updateHeaderCartBadge();
+                }
+            });
+
+            // Form validation function (moved outside DOMContentLoaded for global access)
+            function validateForm() {
+                console.log('Starting form validation...');
+                
+                const phoneNumber = document.getElementById('phone-number')?.value?.trim() || '';
+                const selectedAddress = document.getElementById('address-select')?.value || '';
+                
+                console.log('Form values:', {
+                    phoneNumber,
+                    selectedAddress
+                });
+                
+                // Validate address selection
+                if (!selectedAddress) {
+                    console.log('No address selected');
+                    showToast('Please select a shipping address.');
+                    return false;
+                }
+                
+                // Validate phone number
+                if (!phoneNumber) {
+                    console.log('Phone number is empty');
+                    showToast('Please provide a phone number.');
+                    return false;
+                }
+                if (!/^\d{11}$/.test(phoneNumber)) {
+                    console.log('Phone number format invalid:', phoneNumber);
+                    showToast('Please enter a valid 11-digit phone number (e.g., 09123456789).');
+                    return false;
+                }
+                
+                console.log('Form validation passed!');
+                return true;
+            }
+            
+        // Add Google Sign-In handler function
+        function handleGoogleSignIn(response) {
+            console.log('Google Sign-In Response:', response);
+            const idToken = response.credential;
+            if (!idToken) {
+                console.error('No idToken received');
+                showToast('Google Sign-In failed: No token received');
+                return;
+            }
+            // Try login first
+            let result = Auth.googleLogin(idToken);
+            console.log('Login Result:', result);
+            if (!result.success && result.message.includes("not registered")) {
+                // If login fails due to user not existing, attempt registration
+                result = Auth.googleRegister(idToken);
+                console.log('Registration Result:', result);
+            }
+            showToast(result.message);
+            if (result.success) {
+                document.getElementById('loginModal').classList.remove('show');
+                window.location.reload(); // Reload to update header
+            }
+        }
+
+        // Set up image upload functionality
+        setupImageUpload();
+
+        // Set up complete order button
+        setupCompleteOrderButton();
+        setupOrderConfirmDialog();
+        });
+
+        // Complete order button functionality
+        function setupCompleteOrderButton() {
+            const completeOrderBtn = document.getElementById('completeOrderBtn');
+            const orderConfirmDialog = document.getElementById('orderConfirmDialog');
+            completeOrderBtn.addEventListener('click', function() {
+                orderConfirmDialog.showModal();
+            });
+        }
+        
+        function setupOrderConfirmDialog() {
+            const orderConfirmDialog = document.getElementById('orderConfirmDialog');
+            orderConfirmDialog.addEventListener('close', () => {
+                if (orderConfirmDialog.returnValue === 'yes') {
+                    // Custom validation for all required fields
+                    const fullName = document.getElementById('full-name');
+                    const email = document.getElementById('email');
+                    const address = document.getElementById('address-select');
+                    const phone = document.getElementById('phone-number');
+                    const paymentMethod = document.getElementById('payment-method');
+                    const paymentReference = document.getElementById('payment-reference');
+                    const paymentAmount = document.getElementById('payment-amount');
+                    const proofOfPayment = window.getUploadedFile ? window.getUploadedFile() : null;
+
+                    // Find the first missing/invalid field and build a list of missing fields
+                    let firstMissing = null;
+                    let missingFields = [];
+                    
+                    if (!address.value) {
+                        firstMissing = address;
+                        missingFields.push('Address');
+                    }
+                    if (!phone.value || !/^\d{11}$/.test(phone.value)) {
+                        if (!firstMissing) firstMissing = phone;
+                        missingFields.push('Phone number');
+                    }
+                    if (!paymentMethod.value) {
+                        if (!firstMissing) firstMissing = paymentMethod;
+                        missingFields.push('Payment method');
+                    }
+                    const isCOD = paymentMethod.value === 'cod';
+                    if (!isCOD) {
+                        if (!paymentReference.value) {
+                            if (!firstMissing) firstMissing = paymentReference;
+                            missingFields.push('Payment reference');
+                        }
+                        if (!paymentAmount.value || Number(paymentAmount.value) <= 0) {
+                            if (!firstMissing) firstMissing = paymentAmount;
+                            missingFields.push('Payment amount');
+                        }
+                        if (!proofOfPayment) {
+                            if (!firstMissing) firstMissing = document.getElementById('dropZone');
+                            missingFields.push('Proof of payment');
+                        }
+                    } else {
+                        // For COD, only validate payment amount if change upon delivery is not checked
+                        const changeDelivery = document.getElementById('change-delivery');
+                        if (!changeDelivery.checked && (!paymentAmount.value || Number(paymentAmount.value) <= 0)) {
+                            if (!firstMissing) firstMissing = paymentAmount;
+                            missingFields.push('Payment amount');
+                        }
+                    }
+                    
+                    // For non-COD methods, check if change upon delivery is checked and payment amount is valid
+                    if (!isCOD) {
+                        const changeDelivery = document.getElementById('change-delivery');
+                        if (changeDelivery.checked && (!paymentAmount.value || Number(paymentAmount.value) <= 0)) {
+                            if (!firstMissing) firstMissing = paymentAmount;
+                            missingFields.push('Payment amount');
+                        }
+                    }
+
+                    if (firstMissing) {
+                        console.log('Validation failed, showing toast...');
+                        // Create dynamic message based on missing fields
+                        let message = '';
+                        if (missingFields.length === 1) {
+                            message = `${missingFields[0]} is blank`;
+                        } else if (missingFields.length === 2) {
+                            message = `${missingFields[0]} and ${missingFields[1]} are blank`;
+                        } else {
+                            const lastField = missingFields.pop();
+                            message = `${missingFields.join(', ')}, and ${lastField} are blank`;
+                        }
+                        
+                        // Fallback if showToast is not available
+                        if (typeof showToast === 'function') {
+                            showToast(message);
+                        } else {
+                            alert(message);
+                        }
+                        setTimeout(() => {
+                            if (firstMissing.focus) firstMissing.focus();
+                            else if (firstMissing.scrollIntoView) firstMissing.scrollIntoView({behavior: 'smooth', block: 'center'});
+                        }, 100);
+                        return;
+                    }
+                    
+                    // All fields are filled, if not COD then check payment amount vs total
+                    const fullTotalAmount = window.myCart.getTotal();
+                    const enteredAmount = Number(paymentAmount.value);
+                    const payingByCOD = paymentMethod.value === 'cod';
+                    const changeDelivery = document.getElementById('change-delivery');
+                    const paymentType = document.getElementById('payment-type');
+                    
+                    // Calculate the amount that should be paid now based on payment type
+                    let requiredPaymentAmount = fullTotalAmount;
+                    if (paymentType && paymentType.value === 'split') {
+                        // For split payments, calculate the amount to be paid now
+                        let selectedPercent = 0;
+                        const selectedRadio = document.querySelector('input[name="split-percent"]:checked');
+                        if (selectedRadio) {
+                            selectedPercent = parseFloat(selectedRadio.value);
+                        } else {
+                            const customInput = document.getElementById('split-percent-custom');
+                            if (customInput && customInput.value) {
+                                selectedPercent = parseFloat(customInput.value);
+                            }
+                        }
+                        if (selectedPercent > 0) {
+                            requiredPaymentAmount = (fullTotalAmount * selectedPercent) / 100;
+                        }
+                    }
+                    
+                    console.log('Payment validation - Full Total:', fullTotalAmount, 'Required Now:', requiredPaymentAmount, 'Entered:', enteredAmount);
+                    
+                    // Check payment amount validation based on change upon delivery option
+                    const changeDeliveryChecked = changeDelivery.checked;
+                    
+                    if (!payingByCOD && !changeDeliveryChecked && enteredAmount < requiredPaymentAmount) {
+                        const difference = requiredPaymentAmount - enteredAmount;
+                        const message = `Payment is ₱${difference.toFixed(2)} lower than the required amount (₱${requiredPaymentAmount.toFixed(2)})`;
+                        
+                        console.log('Payment insufficient, showing toast:', message);
+                        console.log('showToast function available:', typeof showToast);
+                        
+                        if (typeof showToast === 'function') {
+                            showToast(message);
+                        } else {
+                            alert(message);
+                        }
+                        setTimeout(() => {
+                            paymentAmount.focus();
+                        }, 100);
+                        return;
+                    }
+                    
+                    // For COD with change upon delivery, ensure amount is at least the total
+                    if (payingByCOD && changeDeliveryChecked && enteredAmount < fullTotalAmount) {
+                        const message = `Payment amount must be at least ₱${fullTotalAmount.toFixed(2)} to receive change upon delivery`;
+                        
+                        if (typeof showToast === 'function') {
+                            showToast(message);
+                        } else {
+                            alert(message);
+                        }
+                        setTimeout(() => {
+                            paymentAmount.focus();
+                        }, 100);
+                        return;
+                    }
+                    
+                    // All fields valid, proceed
+                    proceedWithCheckout();
+                } else {
+                    console.log('Checkout cancelled');
+                    if (typeof showToast === 'function') {
+                        showToast('Checkout cancelled.');
+                    }
+                }
+            });
+        }
+        
+        // Function to handle the actual checkout process
+        function proceedWithCheckout() {
+            console.log('Proceeding with checkout...');
+            
+            // Note: Validation is already done in setupOrderConfirmDialog before calling this function
+            
+            // Get form data
+            const notesValue = document.getElementById('notes-display').value.trim();
+            const addressSelect = document.getElementById('address-select');
+            const selectedAddressText = addressSelect.options[addressSelect.selectedIndex]?.text || '';
+            
+            let selectedSplit = (document.querySelector('input[name="split-percent"]:checked')?.value) || null;
+            const customSplitEl = document.getElementById('split-percent-custom');
+            if (!selectedSplit && customSplitEl && customSplitEl.value) {
+                const cv = parseFloat(customSplitEl.value);
+                if (!isNaN(cv)) selectedSplit = String(cv);
+            }
+            const payingByCOD = document.getElementById('payment-method').value === 'cod';
+            const changeDelivery = document.getElementById('change-delivery');
+            const formData = {
+                fullName: document.getElementById('full-name').value,
+                email: document.getElementById('email').value,
+                address: selectedAddressText,
+                phoneNumber: document.getElementById('phone-number').value,
+                paymentMethod: document.getElementById('payment-method').value,
+                paymentType: payingByCOD ? null : document.getElementById('payment-type').value,
+                paymentSplitPercent: payingByCOD ? null : selectedSplit,
+                paymentReference: payingByCOD ? null : document.getElementById('payment-reference').value,
+                paymentAmount: document.getElementById('payment-amount').value,
+                changeUponDelivery: changeDelivery.checked,
+                notes: notesValue || 'no additional notes',
+                cartItems: window.myCart.items,
+                subtotal: window.myCart.getSubtotal(),
+                deliveryFee: 0, // Currently hardcoded to 0, can be made dynamic later
+                total: window.myCart.getTotal(),
+                proofOfPayment: payingByCOD ? null : (window.getUploadedFile ? window.getUploadedFile() : null)
+            };
+            
+            console.log('Checkout data:', formData);
+            
+            // Save order to database
+            saveOrderToDatabase(formData);
+        }
+        
+        // Function to save order to database
+        async function saveOrderToDatabase(orderData) {
+            try {
+                // Convert image file to base64 if exists
+                let proofOfPaymentBase64 = null;
+                if (orderData.proofOfPayment) {
+                    proofOfPaymentBase64 = await convertFileToBase64(orderData.proofOfPayment);
+                }
+                
+                // Prepare order data for database (including image)
+                const orderForDB = {
+                    userId: Auth.getCurrentUser().id,
+                    fullName: orderData.fullName,
+                    email: orderData.email,
+                    address: orderData.address,
+                    phoneNumber: orderData.phoneNumber,
+                    paymentMethod: orderData.paymentMethod,
+                    paymentReference: orderData.paymentReference,
+                    paymentAmount: parseFloat(orderData.paymentAmount),
+                    notes: orderData.notes,
+                    cartItems: (orderData.cartItems || []).map(item => ({
+                        ...item,
+                        categoryBucket: item.categoryBucket || (function(raw){
+                            const val = String(raw || '').toLowerCase();
+                            const includesAny = (list) => list.some(k => val.includes(k));
+                            if (includesAny(['paint','painting'])) return 'paints';
+                            if (includesAny(['power-tools','powertools','hand-tools','handtools','tool','tools','accessor'])) return 'tools-accessories';
+                            if (includesAny(['building-materials','aggregate','cement','sand','gravel','hollow','plywood','wood','lumber','tile','roof'])) return 'building-materials-aggregates';
+                            if (includesAny(['electrical','wire','breaker','outlet','switch'])) return 'electrical-supplies';
+                            if (includesAny(['plumbing','fixture','pipe','fitting','faucet','valve'])) return 'plumbing-fixtures';
+                            if (includesAny(['fastener','screw','nail','bolt','nut','consumable','adhesive','sealant','tape'])) return 'fasteners-consumables';
+                            switch (String(raw || '')) {
+                                case 'Power-Tools':
+                                case 'Hand-Tools':
+                                    return 'tools-accessories';
+                                case 'Building-Materials':
+                                    return 'building-materials-aggregates';
+                                case 'Plumbing':
+                                    return 'plumbing-fixtures';
+                                case 'Electrical':
+                                    return 'electrical-supplies';
+                                default:
+                                    return 'other';
+                            }
+                        })(item.category),
+                        categoryOriginal: item.category || 'unknown'
+                    })),
+                    total: orderData.total,
+                    proofOfPayment: proofOfPaymentBase64,
+                    orderDate: new Date(),
+                    status: 'active',
+                    orderNumber: generateOrderNumber()
+                };
+                
+                console.log('Saving order to database:', orderForDB);
+                
+                // Send to server
+                const response = await fetch('http://localhost:3000/api/orders', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(orderForDB)
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    console.log('Order saved successfully:', result);
+                    
+                    // Order saved successfully - no stock deduction at checkout
+                    showToast('Order placed successfully! Cart will be cleared.');
+                    
+                    // Add notification for successful order
+                    addOrderNotification(result.orderNumber || orderForDB.orderNumber, orderForDB.total);
+                
+                    // Clear cart and redirect after successful order submission
+                    setTimeout(() => {
+                        console.log('🛒 Clearing cart after successful order submission');
+                        window.myCart.clearCart();
+                        window.location.href = 'order-history.html';
+                    }, 2000);
+                    
+                } else {
+                    throw new Error(result.message || 'Failed to save order');
+                }
+                
+            } catch (error) {
+                console.error('Error saving order:', error);
+                showToast('Failed to place order. Please try again.');
+            }
+        }
+        
+        // Function to convert file to base64
+        function convertFileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    resolve(reader.result);
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+        
+        // Generate unique order number
+        function generateOrderNumber() {
+            const timestamp = Date.now();
+            const random = Math.floor(Math.random() * 1000);
+            return `ORD-${timestamp}-${random}`;
+        }
+        
+        // Add notification for successful order
+        function addOrderNotification(orderNumber, total) {
+            const notification = {
+                id: `order_${orderNumber}_${Date.now()}`,
+                title: '🎉 Order Placed Successfully!',
+                message: `Your order ${orderNumber} (₱${parseFloat(total).toFixed(2)}) has been submitted. Please wait patiently for the order process. You'll receive an acceptance notification when your order is approved.`,
+                time: new Date(),
+                read: false,
+                type: 'order_success',
+                orderNumber: orderNumber,
+                clickAction: 'view_order'
+            };
+            
+            // Get existing notifications from localStorage
+            let notifications = JSON.parse(localStorage.getItem('notifications') || '[]');
+            
+            // Add new notification to the beginning of the array
+            notifications.unshift(notification);
+            
+            // Save back to localStorage
+            localStorage.setItem('notifications', JSON.stringify(notifications));
+            
+            console.log('📬 Order notification added:', notification);
+        }
+
+        // Image upload functionality
+        function setupImageUpload() {
+            const dropZone = document.getElementById('dropZone');
+            const fileInput = document.getElementById('fileInput');
+            const imagePreview = document.getElementById('imagePreview');
+            const previewImg = document.getElementById('previewImg');
+            const removeImageBtn = document.getElementById('removeImageBtn');
+            let uploadedFile = null;
+
+            // Click to browse
+            dropZone.addEventListener('click', () => {
+                fileInput.click();
+            });
+
+            // File input change
+            fileInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    handleFile(file);
+                }
+            });
+
+            // Drag and drop events
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.style.borderColor = '#e63946';
+                dropZone.style.background = 'rgba(230, 57, 70, 0.1)';
+            });
+
+            dropZone.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                dropZone.style.borderColor = '#e0e0e0';
+                dropZone.style.background = '#f8f9fa';
+            });
+
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.style.borderColor = '#e0e0e0';
+                dropZone.style.background = '#f8f9fa';
+                
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    handleFile(files[0]);
+                }
+            });
+
+            // Remove image button
+            removeImageBtn.addEventListener('click', () => {
+                removeImage();
+            });
+
+            function handleFile(file) {
+                // Validate file type
+                if (!file.type.startsWith('image/')) {
+                    showToast('Please select an image file.');
+                    return;
+                }
+
+                // Validate file size (max 5MB)
+                if (file.size > 5 * 1024 * 1024) {
+                    showToast('Image size should be less than 5MB.');
+                    return;
+                }
+
+                uploadedFile = file;
+                const reader = new FileReader();
+                
+                reader.onload = (e) => {
+                    previewImg.src = e.target.result;
+                    imagePreview.classList.remove('hidden');
+                    removeImageBtn.classList.remove('hidden');
+                    dropZone.style.display = 'none';
+                    
+                    // Add preview button with eye icon
+                    const previewBtn = document.createElement('button');
+                    previewBtn.type = 'button';
+                    previewBtn.className = 'action-btn preview';
+                    previewBtn.innerHTML = '<i class="fa fa-eye"></i> Preview';
+                    previewBtn.style.marginLeft = '0.5rem';
+                    previewBtn.style.background = '#e63946';
+                    previewBtn.style.color = 'white';
+                    previewBtn.onclick = () => showImagePreview(e.target.result);
+                    
+                    // Insert preview button after remove button
+                    removeImageBtn.parentNode.insertBefore(previewBtn, removeImageBtn.nextSibling);
+                };
+                
+                reader.readAsDataURL(file);
+                showToast('Image uploaded successfully!');
+            }
+
+            function showImagePreview(imageSrc) {
+                // Create modal for full image preview
+                const modal = document.createElement('div');
+                modal.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0,0,0,0.8);
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    z-index: 10000;
+                    cursor: pointer;
+                `;
+                
+                const img = document.createElement('img');
+                img.src = imageSrc;
+                img.style.cssText = `
+                    max-width: 90%;
+                    max-height: 90%;
+                    object-fit: contain;
+                    border-radius: 8px;
+                    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+                `;
+                
+                modal.appendChild(img);
+                document.body.appendChild(modal);
+                
+                // Close modal on click
+                modal.onclick = () => {
+                    document.body.removeChild(modal);
+                };
+            }
+
+            function removeImage() {
+                uploadedFile = null;
+                fileInput.value = '';
+                imagePreview.classList.add('hidden');
+                removeImageBtn.classList.add('hidden');
+                dropZone.style.display = 'block';
+                previewImg.src = 'images/sanrico_logo_1.png';
+                
+                // Remove preview button if it exists
+                const previewBtn = removeImageBtn.parentNode.querySelector('.action-btn.preview');
+                if (previewBtn) {
+                    previewBtn.remove();
+                }
+            }
+
+            // Make uploadedFile accessible globally
+            window.getUploadedFile = () => uploadedFile;
+        }
+    </script>
+    
+    <!-- Toast Container -->
+    <div class="toast" id="toast"></div>
+
+    <!-- Login Modal -->
+    <div class="modal" id="loginModal">
+        <div class="modal-content">
+            <button class="modal-close" id="modalClose">×</button>
+            <h2 class="modal-title">Welcome Back</h2>
+            
+            <!-- Login Mode Tabs -->
+            <div class="tab-buttons" id="loginTabs">
+                <button class="tab-btn active" data-tab="user-login">User Login</button>
+                <button class="tab-btn" data-tab="staff-login">Staff Login</button>
+            </div>
+            
+            <div class="tab-container">
+                
+                <!-- User Login Tab -->
+                <div class="tab-content active" id="user-login">
+                    <div class="form-group">
+                        <label for="user-email">Email Address</label>
+                        <input type="email" id="user-email" class="form-control" placeholder="Enter your email address">
+                    </div>
+                    <div class="form-group">
+                        <label for="user-password">Password</label>
+                        <input type="password" id="user-password" class="form-control" placeholder="Enter your password">
+                    </div>
+                    <button class="btn" id="userLoginSubmitBtn">Sign In</button>
+                    
+                    <div class="signup-prompt" style="text-align: center; margin: 16px 0;">
+                        <span style="color: #7f8c8d; font-size: 14px;">Don't have an account? </span>
+                        <button type="button" class="signup-link" onclick="showRegistrationModal()" style="background: none; border: none; color: #3498db; font-size: 14px; font-weight: 600; cursor: pointer; padding: 0; text-decoration: underline;">Create one today</button>
+                    </div>
+                    
+                    <div class="login-separator">
+                        <div></div>
+                        <span>or continue with</span>
+                        <div></div>
+                    </div>
+                    
+                    <div class="google-signin-container">
+                        <div id="g_id_onload"
+                             data-client_id="856316440062-00drlhn0s99moqu4a0ktbvgrk0l4mda2.apps.googleusercontent.com"
+                             data-callback="handleGoogleSignIn"
+                             data-auto_prompt="false">
+                        </div>
+                        <div class="g_id_signin" 
+                             data-type="standard" 
+                             data-size="large" 
+                             data-theme="outline" 
+                             data-text="sign_in_with" 
+                             data-shape="rectangular" 
+                             data-logo_alignment="left"
+                             title="Sign in/Sign up using a Google account">
+                        </div>
+                    </div>
+                    
+                    <div class="forgot-password-prompt" style="text-align: center; margin: 16px 0 0 0;">
+                        <span style="color: #7f8c8d; font-size: 14px;">Forgot your password? </span>
+                        <button type="button" class="forgot-password-link" onclick="showRegistrationModal('forgot-password')" style="background: none; border: none; color: #3498db; font-size: 14px; font-weight: 600; cursor: pointer; padding: 0; text-decoration: underline;">Retrieve it today</button>
+                    </div>
+                </div>
+
+                <!-- Staff Login Tab -->
+                <div class="tab-content" id="staff-login">
+                    <div class="form-group">
+                        <label for="staff-email">Staff Email</label>
+                        <input type="email" id="staff-email" class="form-control" placeholder="Enter your staff email">
+                    </div>
+                    <div class="form-group">
+                        <label for="staff-password">Password</label>
+                        <input type="password" id="staff-password" class="form-control" placeholder="Enter your password">
+                    </div>
+                    <button class="btn" id="staffLoginSubmitBtn">Staff Sign In</button>
+                    
+                    <div class="login-separator">
+                        <div></div>
+                        <span>or continue with</span>
+                        <div></div>
+                    </div>
+                    
+                    <div class="google-signin-container">
+                        <div id="g_id_onload"
+                             data-client_id="856316440062-00drlhn0s99moqu4a0ktbvgrk0l4mda2.apps.googleusercontent.com"
+                             data-callback="handleGoogleSignIn"
+                             data-auto_prompt="false">
+                </div>
+                        <div class="g_id_signin" 
+                             data-type="standard" 
+                             data-size="large" 
+                             data-theme="outline" 
+                             data-text="sign_in_with" 
+                             data-shape="rectangular" 
+                             data-logo_alignment="left"
+                             title="Sign in/Sign up using a Google account">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Registration Modal -->
+    <div class="modal" id="registrationModal">
+        <div class="modal-content">
+            <button class="modal-close" id="registrationModalClose">×</button>
+            <h2 class="modal-title">Create Account</h2>
+            
+            <!-- Registration Mode Tabs -->
+            <div class="tab-buttons" id="registrationTabs">
+                <button class="tab-btn active" data-tab="user-signup">Register</button>
+                <button class="tab-btn" data-tab="forgot-password">Account Recovery</button>
+            </div>
+            
+            <div class="tab-container">
+                
+                <!-- User Signup Tab -->
+                <div class="tab-content active" id="user-signup">
+                    <div class="form-group">
+                        <label for="signup-fullname">Full Name</label>
+                        <input type="text" id="signup-fullname" class="form-control" placeholder="Enter your full name">
+                        <div class="error-message"></div>
+                        <div class="success-message"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="signup-email">Email Address</label>
+                        <input type="email" id="signup-email" class="form-control" placeholder="Enter your email address">
+                        <div class="error-message"></div>
+                        <div class="success-message"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="signup-password">Password</label>
+                        <input type="password" id="signup-password" class="form-control" placeholder="Create a strong password">
+                        <div class="password-strength">
+                            <div class="strength-bar">
+                                <div class="strength-fill"></div>
+                            </div>
+                            <div class="strength-text"></div>
+                        </div>
+                        <div class="error-message"></div>
+                        <div class="success-message"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="signup-confirm-password">Confirm Password</label>
+                        <input type="password" id="signup-confirm-password" class="form-control" placeholder="Confirm your password">
+                        <div class="error-message"></div>
+                        <div class="success-message"></div>
+                    </div>
+                    <button class="btn" id="userSignupSubmitBtn">Create My Account</button>
+                    
+                    <div class="signup-prompt" style="text-align: center; margin: 16px 0;">
+                        <span style="color: #7f8c8d; font-size: 14px;">Already have an account? </span>
+                        <button type="button" class="login-link" onclick="showLoginModal()" style="background: none; border: none; color: #3498db; font-size: 14px; font-weight: 600; cursor: pointer; padding: 0; text-decoration: underline;">Sign in here</button>
+                    </div>
+                    
+                    <div class="login-separator">
+                        <div></div>
+                        <span>or continue with</span>
+                        <div></div>
+                    </div>
+                    
+                    <div class="google-signin-container">
+                        <div id="g_id_onload"
+                             data-client_id="856316440062-00drlhn0s99moqu4a0ktbvgrk0l4mda2.apps.googleusercontent.com"
+                             data-callback="handleGoogleSignIn"
+                             data-auto_prompt="false">
+                        </div>
+                        <div class="g_id_signin" 
+                             data-type="standard" 
+                             data-size="large" 
+                             data-theme="outline" 
+                             data-text="sign_up_with" 
+                             data-shape="rectangular" 
+                             data-logo_alignment="left"
+                             title="Sign up using a Google account">
+                        </div>
+                    </div>
+                    </div>
+
+                <!-- Forgot Password Tab -->
+                <div class="tab-content" id="forgot-password">
+                    <div class="form-group">
+                        <label for="forgot-email">Email Address</label>
+                        <input type="email" id="forgot-email" class="form-control" placeholder="Enter your email address">
+                        <div class="error-message"></div>
+                        <div class="success-message"></div>
+                    </div>
+                    <button class="btn" id="forgotPasswordSubmitBtn">Send Recovery Email</button>
+                    
+                    <div class="signup-prompt" style="text-align: center; margin: 16px 0;">
+                        <span style="color: #7f8c8d; font-size: 14px;">Remember your password? </span>
+                        <button type="button" class="login-link" onclick="showLoginModal()" style="background: none; border: none; color: #3498db; font-size: 14px; font-weight: 600; cursor: pointer; padding: 0; text-decoration: underline;">Sign in here</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Confirmation Modal -->
+    <div class="modal" id="paymentConfirmModal">
+        <div class="modal-content">
+            <button class="modal-close" id="closePaymentModal">&times;</button>
+            <h3 class="modal-title">Confirm Payment Details</h3>
+            <div class="payment-confirmation-content">
+                <p>Your order has been placed successfully! Would you like to confirm your payment details now?</p>
+                
+                <div class="order-summary-modal">
+                    <h4>Order Summary</h4>
+                    <div id="modalOrderItems"></div>
+                    <div class="modal-total">
+                        <strong>Total: <span id="modalTotal">₱0.00</span></strong>
+                    </div>
+                </div>
+
+                <div class="payment-details-form">
+                    <h4>Payment Information</h4>
+                    <div class="form-group">
+                        <label for="modal-payment-method">Payment Method</label>
+                        <select id="modal-payment-method" class="form-control">
+                            <option value="bank">Bank Transfer</option>
+                            <option value="gcash">GCash</option>
+                            <option value="cheque">Cheque</option>
+                            <option value="cod">Cash on Delivery</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group" id="bank-details">
+                        <label for="bank-account">Bank Account Number</label>
+                        <input type="text" id="bank-account" class="form-control" placeholder="Enter bank account number">
+                        <label for="bank-name">Bank Name</label>
+                        <input type="text" id="bank-name" class="form-control" placeholder="Enter bank name">
+                    </div>
+                    
+                    <div class="form-group" id="gcash-details">
+                        <label for="gcash-number">GCash Number</label>
+                        <input type="text" id="gcash-number" class="form-control" placeholder="Enter GCash number">
+                        <label for="gcash-name">Account Name</label>
+                        <input type="text" id="gcash-name" class="form-control" placeholder="Enter account name">
+                    </div>
+                    
+                    <div class="form-group" id="cheque-details">
+                        <label for="cheque-number">Cheque Number</label>
+                        <input type="text" id="cheque-number" class="form-control" placeholder="Enter cheque number">
+                        <label for="cheque-bank">Bank Name</label>
+                        <input type="text" id="cheque-bank" class="form-control" placeholder="Enter bank name">
+                    </div>
+                </div>
+
+                <div class="modal-buttons">
+                    <button class="btn btn-secondary" id="skipPaymentBtn">Skip for Now</button>
+                    <button class="btn" id="confirmPaymentBtn">Confirm Payment</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Order Success Modal -->
+    <div class="modal" id="orderSuccessModal">
+        <div class="modal-content">
+            <div class="success-content">
+                <div class="success-icon">✓</div>
+                <h3>Order Placed Successfully!</h3>
+                <p>Thank you for your purchase. Your order has been received.</p>
+                <div class="modal-buttons">
+                    <button class="btn btn-secondary" id="continueShoppingBtn">Continue Shopping</button>
+                    <button class="btn" id="checkOrdersBtn">Check Orders</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Order Confirmation Dialog -->
+    <dialog id="orderConfirmDialog">
+      <p>Are you sure you want to continue?</p>
+      <form method="dialog" style="display: flex; gap: 1rem; justify-content: center; margin-top: 1.5rem;">
+        <button value="no" style="padding: 0.5rem 1.5rem;">No</button>
+        <button value="yes" style="padding: 0.5rem 1.5rem; background: #e63946; color: white; border: none; border-radius: 6px;">Yes</button>
+      </form>
+    </dialog>
+
+</body>
+</html>
+
+<style>
+    .success-content {
+        text-align: center;
+        padding: 2rem;
+    }
+
+    .success-icon {
+        font-size: 4rem;
+        color: #4CAF50;
+        margin-bottom: 1rem;
+    }
+
+    .success-content h3 {
+        margin-bottom: 1rem;
+        color: #333;
+    }
+
+    .success-content p {
+        margin-bottom: 2rem;
+        color: #666;
+    }
+
+    .modal-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+    }
+
+    /* Address Input Styles */
+    .address-inputs {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .address-inputs .form-control {
+        margin-bottom: 0.5rem;
+    }
+
+    @media (min-width: 768px) {
+        .address-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        }
+    }
+
+</style>
