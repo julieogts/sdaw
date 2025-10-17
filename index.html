@@ -467,12 +467,12 @@
             box-shadow: 0 0 0 3px rgba(230, 57, 70, 0.15);
         }
 
-        /* Featured products styling - same as shop page */
-        /* Featured products - modern compact cards */
+        /* Featured products styling - use category card design */
         .featured .product-grid {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr); /* show 4 items on desktop */
+            display: flex;
+            flex-wrap: wrap;
             gap: 16px;
+            justify-content: flex-start;
         }
         .featured .product-card {
             position: relative;
@@ -1409,28 +1409,22 @@
                 const featuredGrid = document.querySelector('.featured .product-grid');
                 if (featuredGrid) {
                     featuredGrid.innerHTML = featuredProducts.map(product => `
-                        <div class="product-card" data-stock-quantity="${product.stockQuantity}">
-                            <a href="product.html?id=${product._id}" class="product-link">
-                                <div class="product-img">
-                                    <img src="${product.image || 'images/sanrico_logo_1.png'}" 
-                                         alt="${product.name}" 
-                                         style="width: 100%; height: 100%; object-fit: cover;">
-                                    <div class="product-img-overlay">
-                                        <span class="in-stock-ping">
-                                            <span class="ping-dot"></span>
-                                            In Stock
-                                        </span>
+                        <div class="category-card featured" data-stock-quantity="${product.stockQuantity}">
+                            <a href="product.html?id=${product._id}" class="category-link">
+                                <div class="category-img">
+                                    <img src="${product.image || 'images/sanrico_logo_1.png'}" alt="${product.name}" style="width: 100%; height: 100%; object-fit: cover;">
+                                    <div class="category-img-overlay">
                                         <span class="product-price">₱${product.price.toFixed(2)}</span>
                                     </div>
                                 </div>
-                                <div class="product-content">
-                                    <h3 class="product-title">${product.name}</h3>
+                                <div class="category-content">
+                                    <h3 class="category-title">${product.name}</h3>
                                 </div>
                             </a>
-                            
-                            <!-- Stock outside the product link -->
-                            <div class="product-details">
-                                <div class="product-stock">
+
+                            <!-- Stock outside the category link -->
+                            <div class="category-details">
+                                <div class="category-stock">
                                     <span class="stock-label">Stock:</span>
                                     <span class="stock-amount">${product.stockQuantity}</span>
                                 </div>
