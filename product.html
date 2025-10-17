@@ -156,15 +156,24 @@
     <!-- Navigation Menu -->
     <nav class="main-nav">
         <div class="container">
-            <div class="nav-content">
-                <a href="#" onclick="window.history.back(); return false;" class="back-button">
-                    <i class="fa fa-arrow-left"></i> Back
-                </a>
             <div class="nav-links">
-                <a href="index.html">Home</a>
+                <a href="index.html" class="active">Home</a>
                 <a href="shop.html">Shop</a>
                 <a href="aboutus.html">About Us</a>
-                <a href="faq.html">FAQ</a>
+                
+
+                <!-- Information Dropdown Menu -->
+                <div class="nav-dropdown">
+                    <button class="nav-dropdown-toggle" id="policiesDropdown">
+                        Information
+                        <i class="fa fa-chevron-down dropdown-arrow"></i>
+                    </button>
+                    <div class="nav-dropdown-menu" id="policiesDropdownMenu">
+                        <a href="terms.html" class="dropdown-item">Terms and Conditions</a>
+                        <a href="privacy.html" class="dropdown-item">Privacy Policy</a>
+                        <a href="security.html" class="dropdown-item">Online Security & Safety</a>
+                        <a href="faq.html" class="dropdown-item">FAQs</a>
+                    </div>
                 </div>
             </div>
         </div>
