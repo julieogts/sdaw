@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sanrico Mercantile - Staff Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/modal.css">
     <link rel="stylesheet" href="css/tooltip.css">
@@ -866,14 +869,12 @@
                     </div>
 
                     <!-- Low Stock Alerts -->
-                    <div class="low-stock-alerts">
+                        <div class="low-stock-alerts">
                         <div class="low-stock-header">
                             <h2>⚠️ Low Stock Alerts</h2>
-                            <div class="section-controls">
-                                <button class="action-btn primary small" id="navigateToLowStockProducts">
-                                    📦 View All
-                                </button>
-                            </div>
+                            <button class="action-btn small secondary low-stock-view-all" id="navigateToLowStockProducts">
+                                📦 View All
+                            </button>
                         </div>
                         <div class="low-stock-list" id="lowStockList">
                             <!-- Low stock products will be populated here -->
@@ -2647,13 +2648,13 @@
 
                 // Show recent orders for activity
                 const recentActivities = [
-                    ...this.orders.slice(0, 10).map(order => ({
+                    ...this.orders.slice(0, 5).map(order => ({
                         type: 'order',
                         title: `New Order ${order.orderNumber || this.generateOrderNumber(order)}`,
                         description: `${order.fullName || order.buyerinfo || 'Unknown Customer'} - ₱${(parseFloat(order.total) || 0).toFixed(2)}`,
                         time: new Date(order.createdAt || order.orderDate || order.original_date)
                     }))
-                ].sort((a, b) => b.time - a.time).slice(0, 10);
+                ].sort((a, b) => b.time - a.time).slice(0, 5);
 
                 if (recentActivities.length === 0) {
                     activityList.innerHTML = '<div class="no-data">No recent activity</div>';

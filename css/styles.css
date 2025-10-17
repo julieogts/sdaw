@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+
 /* Global Styles */
 :root {
     --primary: #e63946;
@@ -43,7 +45,7 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Montserrat', sans-serif;
 }
 
 body {
@@ -4637,7 +4639,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .masked-email {
-    font-family: 'Courier New', monospace;
+    font-family: 'Montserrat', monospace;
     color: var(--dark-gray);
     font-weight: 500;
     transition: all 0.3s ease;
