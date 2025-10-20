@@ -890,11 +890,13 @@
                     <div class="section-controls">
                         <select id="categoryFilter" class="form-control">
                             <option value="all">All Categories</option>
-                            <option value="power-tools">Power Tools</option>
-                            <option value="hand-tools">Hand Tools</option>
-                            <option value="plumbing">Plumbing</option>
-                            <option value="electrical">Electrical</option>
-                            <option value="building-materials">Building Materials</option>
+                            <option value="tools-accessories">Tools & Accessories</option>
+                            <option value="building-materials-aggregates">Building Materials & Aggregates</option>
+                            <option value="electrical-supplies">Electrical Supplies</option>
+                            <option value="plumbing-fixtures">Plumbing & Fixtures</option>
+                            <option value="fasteners-consumables">Fasteners & Consumables</option>
+                            <option value="paints">Paints</option>
+                            <option value="other">Other</option>
                         </select>
                         <input type="text" id="productSearch" class="form-control" placeholder="Search products...">
                     </div>
@@ -1038,11 +1040,12 @@
                         </div>
                         <div class="pos-categories">
                             <button class="category-btn active" data-category="all">All</button>
-                            <button class="category-btn" data-category="power-tools">Power Tools</button>
-                            <button class="category-btn" data-category="hand-tools">Hand Tools</button>
-                            <button class="category-btn" data-category="building-materials">Building Materials</button>
-                            <button class="category-btn" data-category="plumbing">Plumbing</button>
-                            <button class="category-btn" data-category="electrical">Electrical</button>
+                            <button class="category-btn" data-category="tools-accessories">Tools & Accessories</button>
+                            <button class="category-btn" data-category="building-materials-aggregates">Building Materials</button>
+                            <button class="category-btn" data-category="plumbing-fixtures">Plumbing</button>
+                            <button class="category-btn" data-category="electrical-supplies">Electrical</button>
+                            <button class="category-btn" data-category="fasteners-consumables">Fasteners</button>
+                            <button class="category-btn" data-category="paints">Paints</button>
                         </div>
                         <div class="pos-products-grid" id="posProductsGrid">
                             <!-- POS Products will be loaded here -->
@@ -1958,7 +1961,7 @@
                 try {
                     const response = await fetch('http://localhost:3000/api/products');
                     if (!response.ok) throw new Error('Failed to fetch products');
-                    
+
                     let products = await response.json();
                     this.products = products.map(product => ({
                         id: product._id,
@@ -1976,11 +1979,17 @@
                             }
                             return 0;
                         })(),
-                        category: this.mapDbCategoryToLocal(product.category),
+                        category: this.normalizeProductCategory(product.category),
                         image: product.image || 'images/sanrico_logo_1.png',
                         stock: product.stockQuantity || 0,
                         description: product.description || 'No description available.'
                     }));
+
+                    // Debug: Log category distribution
+                    console.log('📊 Product category distribution:', this.products.reduce((acc, p) => {
+                        acc[p.category] = (acc[p.category] || 0) + 1;
+                        return acc;
+                    }, {}));
                 } catch (error) {
                     console.error('Error loading products:', error);
                     this.products = [];
@@ -2132,14 +2141,34 @@
                 return date.toLocaleDateString();
             }
 
-            mapDbCategoryToLocal(dbCategory) {
-                switch(dbCategory) {
-                    case 'Power-Tools': return 'power-tools';
-                    case 'Hand-Tools': return 'hand-tools';
-                    case 'Building-Materials': return 'building-materials';
-                    case 'Plumbing': return 'plumbing';
-                    case 'Electrical': return 'electrical';
-                    default: return dbCategory.toLowerCase().replace(/\s+/g, '-');
+            // Updated product category normalization to match server-side logic
+            normalizeProductCategory(productCategory) {
+                if (!productCategory) return 'other';
+
+                const category = String(productCategory).toLowerCase();
+                const includesAny = (list) => list.some(keyword => category.includes(keyword));
+
+                // Comprehensive category mapping based on server logic
+                if (includesAny(['paint','painting'])) return 'paints';
+                if (includesAny(['power-tools','powertools','hand-tools','handtools','tool','tools','accessor'])) return 'tools-accessories';
+                if (includesAny(['building-materials','aggregate','cement','sand','gravel','hollow','plywood','wood','lumber','tile','roof'])) return 'building-materials-aggregates';
+                if (includesAny(['electrical','wire','breaker','outlet','switch'])) return 'electrical-supplies';
+                if (includesAny(['plumbing','fixture','pipe','fitting','faucet','valve'])) return 'plumbing-fixtures';
+                if (includesAny(['fastener','screw','nail','bolt','nut','consumable','adhesive','sealant','tape'])) return 'fasteners-consumables';
+
+                // Legacy category mappings for backward compatibility
+                switch (String(productCategory)) {
+                    case 'Power-Tools':
+                    case 'Hand-Tools':
+                        return 'tools-accessories';
+                    case 'Building-Materials':
+                        return 'building-materials-aggregates';
+                    case 'Plumbing':
+                        return 'plumbing-fixtures';
+                    case 'Electrical':
+                        return 'electrical-supplies';
+                    default:
+                        return 'other';
                 }
             }
 
