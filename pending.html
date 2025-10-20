@@ -174,9 +174,7 @@
 
         // Check if user is logged in as staff
         function checkStaffAuth() {
-            console.log('🔍 Checking staff authentication...');
             const currentUser = Auth.getCurrentUser();
-            console.log('Current user:', currentUser);
             
             if (!currentUser) {
                 console.log('❌ No current user found - allowing for testing');

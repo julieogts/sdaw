@@ -335,14 +335,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Listen for cart updates from other pages
     window.addEventListener('cartUpdated', async (event) => {
-        console.log('cartUpdated event received:', event.detail);
         // Temporarily disabled to prevent race condition with quantity updates
         // if (event.detail && event.detail.cartData) {
         //     const cartKey = `cart_${Auth.getCurrentUser() ? Auth.getCurrentUser().id : 'guest'}`;
         //     localStorage.setItem(cartKey, JSON.stringify(event.detail.cartData));
         //     myCart.loadCart();
         //     cartItems = myCart.getItems();
-        //     console.log('After cart update, items:', cartItems.length);
         //     await displayCart();
         // }
         // Update header cart badge

@@ -286,7 +286,6 @@ const notificationManager = new NotificationManager();
     window.addEventListener('storage', function(e) {
         // Check if it's a notification update
         if (e.key && (e.key.startsWith('notifications_') || e.key === 'notifications')) {
-            console.log('📬 Notification storage changed, reloading notifications');
             loadNotifications();
             updateNotifications();
         }
@@ -294,7 +293,6 @@ const notificationManager = new NotificationManager();
 
     // Also listen for custom notification events
     window.addEventListener('notificationAdded', function(e) {
-        console.log('📬 Custom notification event received');
         loadNotifications();
         updateNotifications();
     });

@@ -350,7 +350,7 @@ document.addEventListener('DOMContentLoaded', () => {
     localStorage.setItem = function(key, value) {
         originalSetItem.apply(this, arguments);
         if (key.startsWith('cart_')) {
-            setTimeout(updateCartDisplay, 100); // Small delay to ensure data is saved
+            updateCartDisplay(); // Update immediately
         }
     };
 

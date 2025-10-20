@@ -183,18 +183,13 @@ class Navigation {
     }
 
     setActiveNavLink() {
-        console.log('Setting active nav link...');
         const currentPath = window.location.pathname;
-        console.log('Current path:', currentPath);
         const navLinks = document.querySelectorAll('.nav-links a');
-        console.log('Found nav links:', navLinks.length);
         
         navLinks.forEach(link => {
             const href = link.getAttribute('href');
-            console.log('Checking link:', href);
             // Check if the current path ends with the href or if it's the index page
             if (currentPath.endsWith(href) || (currentPath.endsWith('/') && href === 'index.html')) {
-                console.log('Setting active for:', href);
                 link.classList.add('active');
             } else {
                 link.classList.remove('active');
@@ -268,7 +263,7 @@ class Navigation {
         toggle.addEventListener('mouseenter', () => { if (!nav.classList.contains('active')) edgeFill.classList.add('show'); });
         toggle.addEventListener('mouseleave', () => { if (!nav.classList.contains('active')) edgeFill.classList.remove('show'); });
 
-        links.forEach(a => a.addEventListener('click', () => setTimeout(closeSidebar, 100)));
+        links.forEach(a => a.addEventListener('click', closeSidebar));
 
         // Tease after loader hides, then every 10s
         const startTease = () => {
@@ -279,7 +274,7 @@ class Navigation {
                     edgeFill.classList.add('show');
                     toggle.classList.add('tease');
                     nav.classList.add('tease');
-                    setTimeout(() => { toggle.classList.remove('tease'); nav.classList.remove('tease'); edgeFill.classList.remove('show'); }, 1000);
+                    setTimeout(() => { toggle.classList.remove('tease'); nav.classList.remove('tease'); edgeFill.classList.remove('show'); }, 500);
                 };
                 run();
                 window.__sidebarTeaseInterval = setInterval(run, 10000);
@@ -291,7 +286,7 @@ class Navigation {
         const startOnce = () => { if (!started) { started = true; startTease(); } };
         window.addEventListener('pageLoaderHidden', startOnce, { once: true });
         // Fallback timer
-        setTimeout(startOnce, 3000);
+        setTimeout(startOnce, 1000);
     }
 }
 

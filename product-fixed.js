@@ -215,6 +215,22 @@ async function addToCart() {
     console.log('addToCart function called.');
     console.log('Current product:', window.currentProduct);
 
+    // Check if user is logged in
+    if (!Auth.isLoggedIn()) {
+        showToast('Please log in to add items to your cart.', 'error');
+        // Show login modal
+        const loginModal = document.getElementById('loginModal');
+        if (loginModal) {
+            loginModal.classList.add('show');
+            // Ensure the user login tab is active
+            document.querySelector('#loginTabs .tab-btn[data-tab="user-login"]').click();
+        } else {
+            // Fallback: redirect to index page with login parameter
+            window.location.href = 'index.html?showLogin=true';
+        }
+        return;
+    }
+
     if (!window.currentProduct) {
         showToast('Product details not loaded yet. Please wait.', 'error');
         return;
@@ -275,6 +291,22 @@ async function addToCart() {
 }
 
 async function buyNow() {
+    // Check if user is logged in
+    if (!Auth.isLoggedIn()) {
+        showToast('Please log in to proceed with your purchase.', 'error');
+        // Show login modal
+        const loginModal = document.getElementById('loginModal');
+        if (loginModal) {
+            loginModal.classList.add('show');
+            // Ensure the user login tab is active
+            document.querySelector('#loginTabs .tab-btn[data-tab="user-login"]').click();
+        } else {
+            // Fallback: redirect to index page with login parameter
+            window.location.href = 'index.html?showLogin=true';
+        }
+        return;
+    }
+
     if (!window.currentProduct) {
         showToast('Product details not loaded yet. Please wait.', 'error');
         return;

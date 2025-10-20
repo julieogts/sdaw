@@ -46,25 +46,20 @@ const searchQuery = urlParams.get('search');
 
 // Load products from MongoDB
 async function loadProducts() {
-    console.log('🔍 loadProducts function called');
     
     // Show loading animations
     showLoadingProducts();
     showLoadingProductCount();
     
     try {
-        console.log('📡 Fetching products from API...');
         const response = await fetch('http://localhost:3000/api/products');
-        console.log('📊 Response status:', response.status);
         if (!response.ok) {
             throw new Error('Failed to fetch products');
         }
         products = await response.json();
-        console.log('✅ Initial products loaded:', products.length, 'products');
         
-        // Log unique categories from database
+        // Get unique categories for filter dropdown
         const uniqueCategories = [...new Set(products.map(p => p.category))];
-        console.log('Unique categories in database:', uniqueCategories);
         
         // Convert price to number - prefer SellingPrice, but fall back gracefully
         const toNumber = (val) => {
@@ -80,20 +75,16 @@ async function loadProducts() {
                 if (!isNaN(n)) { finalPrice = n; break; }
             }
             const convertedProduct = { ...product, price: finalPrice };
-            console.log('Converted product:', convertedProduct);
             return convertedProduct;
         });
         
-        console.log('Products after price conversion:', products);
         filteredProducts = [...products];
-        console.log('Initial filtered products:', filteredProducts);
         
         // If there's a search query, filter products immediately
         if (searchQuery) {
             const searchInput = document.querySelector('.header-search input');
             if (searchInput) {
                 searchInput.value = searchQuery;
-                console.log('Setting search input value to:', searchQuery);
             } else {
                 console.error('Search input element not found!');
             }
@@ -132,8 +123,6 @@ function filterAndSortProducts(selectedCategory = null) {
         const minPriceInput = document.getElementById('minPrice');
         const maxPriceInput = document.getElementById('maxPrice');
         
-        console.log('Search input element:', searchInput);
-        
         const searchQuery = searchInput ? searchInput.value.toLowerCase().trim() : '';
         // Get category from parameter or active sidebar link
         const category = selectedCategory || document.querySelector('.category-link.active')?.dataset.category || 'all';
@@ -141,11 +130,6 @@ function filterAndSortProducts(selectedCategory = null) {
         const maxPrice = maxPriceInput ? parseFloat(maxPriceInput.value) || Infinity : Infinity;
         const sortBy = document.getElementById('sort-by').value;
         
-        console.log('Filtering with:', {
-            searchQuery,
-            category,
-            minPrice,
-            maxPrice,
             sortBy,
             totalProducts: products.length
         });
@@ -210,9 +194,6 @@ function filterAndSortProducts(selectedCategory = null) {
             
             return matchesSearch && categoryMatches && matchesPrice;
         });
-        
-        console.log('Filtered products before sorting:', {
-            total: filteredProducts.length,
             products: filteredProducts
         });
         
@@ -232,9 +213,6 @@ function filterAndSortProducts(selectedCategory = null) {
                 // Keep original order
                 break;
         }
-        
-        console.log('Filtered products after sorting:', {
-            total: filteredProducts.length,
             products: filteredProducts
         });
         
@@ -251,9 +229,6 @@ function displayProducts(productsToDisplay = filteredProducts) {
     const start = (currentPage - 1) * productsPerPage;
     const end = start + productsPerPage;
     const displayedProducts = productsToDisplay.slice(start, end);
-    
-    console.log('Displaying products:', {
-        start,
         end,
         totalProducts: productsToDisplay.length,
         displayedProducts: displayedProducts.length,
@@ -522,12 +497,10 @@ function updateTopLoginBtn() {
 
 // Initialize the page
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('🚀 DOM Content Loaded - Initializing shop page');
     // Update cart count and login state
     Auth.updateCartCount();
     updateTopLoginBtn();
     
-    console.log('🔄 Calling loadProducts...');
     loadProducts();
 
     // Set up event listeners with null checks
@@ -716,13 +689,11 @@ if (applyPriceRangeElement) {
 function setupModeToggle() {
     // Force drag mode always
     currentMode = 'drag';
-    console.log('Shop set to drag mode only');
 }
 
 function switchMode(mode) {
     // Always use drag mode
     currentMode = 'drag';
-    console.log('Mode locked to drag mode');
 }
 
 // Multi-mode click handler removed - drag and drop only

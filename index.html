@@ -1251,11 +1251,9 @@
                     throw new Error('Failed to fetch products');
                 }
                 let products = await response.json();
-                console.log('Initial products loaded:', products);
                 
-                // Log unique categories from database
+                // Get unique categories from database
                 const uniqueCategories = [...new Set(products.map(p => p.category))];
-                console.log('Unique categories in database:', uniqueCategories);
                 
                 // Convert price to number - prefer SellingPrice, but fall back gracefully
                 const toNumber = (val) => {

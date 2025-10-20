@@ -1441,7 +1441,6 @@
         // Check if user is logged in as staff
         function checkStaffAuth() {
             const currentUser = Auth.getCurrentUser();
-            console.log('Staff auth check - currentUser:', currentUser);
             
             if (!currentUser) {
                 console.warn('No current user found, redirecting to homepage...');
@@ -1454,8 +1453,6 @@
                 window.location.href = 'index.html';
                 return false;
             }
-            
-            console.log('Staff authentication successful for:', currentUser.username);
             document.getElementById('staffName').textContent = currentUser.fullName || currentUser.staffId;
             return true;
         }
@@ -1773,20 +1770,95 @@
                 `;
             }
             
+            showLoadingRecentActivity() {
+                const activityList = document.getElementById('activityList');
+                activityList.classList.add('loading');
+                activityList.innerHTML = `
+                    <div class="loading-spinner">
+                        <div class="spinner"></div>
+                        <div class="loading-text">Loading recent activity...</div>
+                    </div>
+                `;
+            }
+
+            showLoadingLowStockAlerts() {
+                const lowStockList = document.getElementById('lowStockList');
+                lowStockList.classList.add('loading');
+                lowStockList.innerHTML = `
+                    <div class="loading-spinner">
+                        <div class="spinner"></div>
+                        <div class="loading-text">Loading low stock alerts...</div>
+                    </div>
+                `;
+            }
+            
             
 
             async loadData() {
-                // Show loading animations
-                this.showLoadingStats();
-                this.showLoadingProducts();
-                this.showLoadingOrders();
+                // Initialize simple in-memory cache if needed
+                if (!this._cache) {
+                    this._cache = { products: null, orders: null, returns: null, stats: null };
+                }
 
-                await this.loadProducts();
-                await this.loadOrders();
-                await this.loadReturns();
-                await this.loadComprehensiveStats();
-                this.updateStats();
-                this.renderCurrentSection();
+                // Show loading animations for visible areas
+                this.showLoadingStats();
+                if (this.currentSection === 'products') this.showLoadingProducts();
+                if (this.currentSection === 'orders') this.showLoadingOrders();
+                if (this.currentSection === 'returns') this.showLoadingReturns();
+                
+                // Show loading for dashboard sections if dashboard is the current section
+                if (this.currentSection === 'dashboard') {
+                    this.showLoadingRecentActivity();
+                    this.showLoadingLowStockAlerts();
+                }
+
+                // Load the current section's data first (fast first paint),
+                // then fetch the remaining datasets in the background
+                try {
+                    if (this.currentSection === 'products') {
+                        await this.loadProducts();
+                        this.renderCurrentSection();
+                        Promise.allSettled([
+                            this.loadOrders(),
+                            this.loadReturns(),
+                            this.loadComprehensiveStats()
+                        ]).then(() => { this.updateStats(); });
+                        return;
+                    }
+                    if (this.currentSection === 'orders') {
+                        await this.loadOrders();
+                        this.renderCurrentSection();
+                        Promise.allSettled([
+                            this.loadProducts(),
+                            this.loadReturns(),
+                            this.loadComprehensiveStats()
+                        ]).then(() => { this.updateStats(); });
+                        return;
+                    }
+                    if (this.currentSection === 'returns') {
+                        await this.loadReturns();
+                        this.renderCurrentSection();
+                        Promise.allSettled([
+                            this.loadProducts(),
+                            this.loadOrders(),
+                            this.loadComprehensiveStats()
+                        ]).then(() => { this.updateStats(); });
+                        return;
+                    }
+                    // Dashboard needs products + orders + stats primarily
+                    await Promise.all([
+                        this.loadProducts(),
+                        this.loadOrders(),
+                        this.loadComprehensiveStats()
+                    ]);
+                    this.renderCurrentSection();
+                    Promise.allSettled([
+                        this.loadReturns()
+                    ]).then(() => { this.updateStats(); });
+                } catch (e) {
+                    console.error('Error loading initial data:', e);
+                    showToast('Failed to load some data. Please try again.', 'error');
+                }
             }
             
             showLoadingProducts() {
@@ -2615,19 +2687,21 @@
                 // Show brief loading when switching sections
                 if (this.currentSection === 'products') {
                     this.showLoadingProducts();
-                    setTimeout(() => this.renderProducts(), 150);
+                    this.renderProducts();
                 } else if (this.currentSection === 'orders') {
                     this.showLoadingOrders();
-                    setTimeout(() => this.renderOrders(), 150);
+                    this.renderOrders();
                 } else if (this.currentSection === 'returns') {
                     this.showLoadingReturns();
-                    setTimeout(() => this.renderReturns(), 150);
+                    this.renderReturns();
+                } else if (this.currentSection === 'dashboard') {
+                    // Show loading for dashboard sections when switching to dashboard
+                    this.showLoadingRecentActivity();
+                    this.showLoadingLowStockAlerts();
+                    this.renderDashboard();
                 } else {
-                    // No loading for dashboard and cashier sections
+                    // No loading for cashier section
                     switch(this.currentSection) {
-                        case 'dashboard':
-                            this.renderDashboard();
-                            break;
                         case 'cashier':
                             this.renderPOSProducts('all');
                             break;
@@ -2636,20 +2710,21 @@
             }
 
             renderDashboard() {
-                // Render recent activity
+                // Render recent activity and low stock alerts
+                // Loading is already shown during loadData() if this is the initial load
                 this.renderRecentActivity();
-
-                // Render low stock alerts
                 this.renderLowStockAlerts();
             }
 
             renderRecentActivity() {
                 const activityList = document.getElementById('activityList');
+                activityList.classList.remove('loading');
 
                 // Show recent orders for activity
                 const recentActivities = [
                     ...this.orders.slice(0, 5).map(order => ({
                         type: 'order',
+                        orderId: order._id,
                         title: `New Order ${order.orderNumber || this.generateOrderNumber(order)}`,
                         description: `${order.fullName || order.buyerinfo || 'Unknown Customer'} - ₱${(parseFloat(order.total) || 0).toFixed(2)}`,
                         time: new Date(order.createdAt || order.orderDate || order.original_date)
@@ -2662,7 +2737,7 @@
                 }
 
                 activityList.innerHTML = recentActivities.map(activity => `
-                    <div class="activity-item">
+                    <div class="activity-item" data-order-id="${activity.orderId}" onclick="staffDashboard.viewOrder('${activity.orderId}')">
                         <div class="activity-icon ${activity.type}">
                             ${activity.type === 'order' ? '📋' : '🚶'}
                         </div>
@@ -2671,12 +2746,16 @@
                             <div class="activity-description">${activity.description}</div>
                             <div class="activity-time">${this.formatTime(activity.time)}</div>
                         </div>
+                        <div class="activity-arrow">
+                            <i class="fa fa-chevron-right"></i>
+                        </div>
                     </div>
                 `).join('');
             }
 
             renderLowStockAlerts() {
                 const lowStockList = document.getElementById('lowStockList');
+                lowStockList.classList.remove('loading');
 
                 // Filter products with low stock (5 or less)
                 const lowStockProducts = this.products.filter(product => product.stock <= 5).slice(0, 5);

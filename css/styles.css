@@ -5279,8 +5279,10 @@ h1, h2, h3, h4, h5, h6 {
     box-shadow: 4px 0 20px rgba(0, 0, 0, 0.3);
     z-index: 999;
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    overflow-y: auto;
+    overflow: hidden;
     border-right: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    flex-direction: column;
 }
 
 .retractable-sidebar.active {
@@ -5330,17 +5332,23 @@ h1, h2, h3, h4, h5, h6 {
 .sidebar-content {
     padding: 0; /* items should fill the width */
     background: transparent;
-    max-height: calc(100vh - 64px); /* header ~64px */
-    overflow-y: auto;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    padding-top: 2rem;
 }
 
 .sidebar-nav {
     list-style: none;
     margin: 0;
-    padding: 0;
+    padding: 1rem 0;
     background: transparent;
     display: flex;
     flex-direction: column; /* vertical order */
+    height: 100%;
+    justify-content: flex-start;
+    gap: 0.5rem;
 }
 
 .sidebar-nav li {
@@ -5566,20 +5574,4 @@ h1, h2, h3, h4, h5, h6 {
     color: #000000;
 }
 
-/* Smooth scrollbar for sidebar */
-.retractable-sidebar::-webkit-scrollbar {
-    width: 6px;
-}
-
-.retractable-sidebar::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.1);
-}
-
-.retractable-sidebar::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.3);
-    border-radius: 3px;
-}
-
-.retractable-sidebar::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.5);
-}
+/* Sidebar no longer scrollable - scrollbar styles removed */

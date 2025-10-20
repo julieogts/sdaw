@@ -1127,7 +1127,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 this.disabled = false;
                 this.textContent = 'Sign In';
                 // Hide overlay if still visible (non-redirect paths)
-                setTimeout(() => { if (window.LoadingUtils) window.LoadingUtils.hide(); }, 200);
+                if (window.LoadingUtils) window.LoadingUtils.hide();
             }
         });
     }

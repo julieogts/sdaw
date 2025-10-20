@@ -94,9 +94,7 @@ class Auth {
                     createdAt: new Date().toISOString()
                 };
                 
-                console.log('Setting staff user:', staffUser);
                 this.setCurrentUser(staffUser);
-                console.log('Stored user after setCurrentUser:', this.getCurrentUser());
                 return { success: true, message: 'Staff login successful' };
             } else {
                 return { success: false, message: result.message };
@@ -108,12 +106,10 @@ class Auth {
     }
 
     static logout() {
-        console.log('Auth.logout called at:', new Date().toISOString());
         try {
             // First remove any user-specific data
             const currentUser = this.getCurrentUser();
             if (currentUser) {
-                console.log('Logging out user:', currentUser.id);
                 
                 // Clear any user-specific cart
                 const userId = currentUser.id;
@@ -124,8 +120,6 @@ class Auth {
             // Then clear the current user from localStorage
             localStorage.removeItem('currentUser');
             localStorage.removeItem('staffAuth');
-            
-            console.log('Current user after logout:', localStorage.getItem('currentUser'));
             return { success: true, message: 'Logout successful' };
         } catch (error) {
             console.error('Error during logout:', error);
@@ -138,13 +132,11 @@ class Auth {
     }
 
     static setCurrentUser(user) {
-        console.log('Auth.setCurrentUser called with:', user);
         localStorage.setItem('currentUser', JSON.stringify(user));
         
         // If this is a staff user, also set a backup flag
         if (user && (user.isStaff || user.isCashier)) {
             localStorage.setItem('staffAuth', 'true');
-            console.log('Staff authentication flag set');
         }
     }
 
@@ -377,7 +369,6 @@ class Auth {
             const response = await fetch(`http://localhost:3000/api/orders/${userId}`);
             if (response.ok) {
                 const orders = await response.json();
-                console.log('Orders loaded from MongoDB:', orders);
                 return orders;
             } else {
                 console.warn('Failed to fetch orders from MongoDB, falling back to localStorage');
@@ -474,7 +465,6 @@ class Auth {
             
             if (response.ok) {
                 const result = await response.json();
-                console.log('Order saved to MongoDB:', result);
             } else {
                 console.warn('Failed to save to MongoDB, falling back to localStorage');
                 // Fallback to localStorage
@@ -495,7 +485,6 @@ class Auth {
                 }
                 userCarts[currentUser.id].push(order);
                 localStorage.setItem('userCarts', JSON.stringify(userCarts));
-                console.log('Order saved to localStorage as fallback');
             } catch (localError) {
                 console.error('Error saving order to localStorage:', localError);
                 return { success: false, message: 'Checkout failed: Unable to save order.' };
@@ -544,11 +533,8 @@ class Auth {
             );
             
             if (!hasOrders) {
-                console.log('No localStorage orders found to migrate');
                 return { success: true, message: 'No orders to migrate', totalMigrated: 0 };
             }
-            
-            console.log('Migrating localStorage orders to MongoDB...', userCarts);
             
             const response = await fetch('http://localhost:3000/api/orders/migrate', {
                 method: 'POST',
@@ -560,7 +546,6 @@ class Auth {
             
             if (response.ok) {
                 const result = await response.json();
-                console.log('Migration completed:', result);
                 
                 // Optionally clear localStorage after successful migration
                 // localStorage.removeItem('userCarts');
@@ -584,20 +569,16 @@ class Auth {
         const migrationDone = localStorage.getItem('ordersMigrated');
         
         if (!migrationDone) {
-            console.log('Starting one-time order migration...');
             const migrationResult = await this.migrateLocalStorageOrders();
             
             if (migrationResult.success) {
                 localStorage.setItem('ordersMigrated', 'true');
-                console.log(`Migration completed: ${migrationResult.totalMigrated} orders migrated`);
                 
                 // Show user notification if orders were migrated
                 if (migrationResult.totalMigrated > 0) {
                     const message = `Successfully migrated ${migrationResult.totalMigrated} existing orders to the new system!`;
                     if (typeof showToast === 'function') {
                         showToast(message, 'success');
-                    } else {
-                        console.log(message);
                     }
                 }
             } else {
@@ -643,14 +624,10 @@ class Cart {
         const userId = currentUser ? currentUser.id : 'guest';
         const cartKey = `cart_${userId}`;
         
-        console.log('Loading cart for user:', userId, 'key:', cartKey);
-        
         try {
             const cartData = JSON.parse(localStorage.getItem(cartKey) || '{}');
-            console.log('Cart data from localStorage:', cartData);
             this.items = cartData.items || [];
             this.notes = cartData.notes || '';
-            console.log('Loaded items:', this.items.length);
         } catch (error) {
             console.error('Error loading cart:', error);
             this.items = [];
@@ -669,7 +646,6 @@ class Cart {
         const userId = currentUser ? currentUser.id : 'guest';
         const cartKey = `cart_${userId}`;
         
-        console.log('Saving cart for user:', userId, 'items:', this.items.length);
         localStorage.setItem(cartKey, JSON.stringify(cartData));
         
         // Dispatch custom event to update cart tab (unless skipped)
@@ -723,18 +699,12 @@ class Cart {
     updateQuantity(productId, quantity, skipEvent = false) {
         const itemIndex = this.items.findIndex(item => item.id === productId);
         
-        console.log('updateQuantity called:', { productId, quantity, itemIndex, currentItems: this.items.length });
-        
         if (itemIndex !== -1) {
             // Ensure quantity is a valid integer >= 1
             const parsedQty = parseInt(quantity);
             const finalQuantity = isNaN(parsedQty) ? 1 : Math.max(1, parsedQty);
-            console.log('Updating quantity from', this.items[itemIndex].quantity, 'to', finalQuantity);
             this.items[itemIndex].quantity = finalQuantity;
             this.saveCart(skipEvent);
-            console.log('After update, items:', this.items.length);
-        } else {
-            console.log('Item not found in cart:', productId);
         }
     }
 
@@ -762,7 +732,6 @@ class Cart {
 }
 
 function updateAccountButton() {
-    console.log('updateAccountButton called');
     const loginBtn = document.getElementById('loginBtn');
     const cartBtn = document.getElementById('cartBtn');
     const currentUser = Auth.getCurrentUser();
@@ -827,6 +796,5 @@ function updateAccountButton() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('DOM loaded, initializing account button');
     updateAccountButton();
 });

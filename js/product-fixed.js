@@ -3,8 +3,6 @@
 // Load product from database based on URL parameter
 async function loadProductDetails() {
     const productId = getUrlParameter('id');
-    console.log('Current URL:', window.location.href);
-    console.log('Product ID from URL:', productId);
     
     if (!productId) {
         console.error('No product ID provided in URL');
@@ -16,9 +14,7 @@ async function loadProductDetails() {
     }
 
     try {
-        console.log('Fetching product from:', `http://localhost:3000/api/products/${productId}`);
         const response = await fetch(`http://localhost:3000/api/products/${productId}`);
-        console.log('Response status:', response.status);
         
         if (!response.ok) {
             if (response.status === 404) {
@@ -144,7 +140,6 @@ async function loadProductDetails() {
                 category: product.category,
                 stock: product.stockQuantity
             };
-            console.log('window.currentProduct has been set:', window.currentProduct);
             
             // Display stock amount next to quantity controls
             const stockAmountDisplay = document.getElementById('stockAmountDisplay');
@@ -204,8 +199,22 @@ function getUrlParameter(name) {
 
 // Add to cart functionality
 async function addToCart() {
-    console.log('addToCart function called.');
-    console.log('Current product:', window.currentProduct);
+
+    // Check if user is logged in
+    if (!Auth.isLoggedIn()) {
+        showToast('Please log in to add items to your cart.', 'error');
+        // Show login modal
+        const loginModal = document.getElementById('loginModal');
+        if (loginModal) {
+            loginModal.classList.add('show');
+            // Ensure the user login tab is active
+            document.querySelector('#loginTabs .tab-btn[data-tab="user-login"]').click();
+        } else {
+            // Fallback: redirect to index page with login parameter
+            window.location.href = 'index.html?showLogin=true';
+        }
+        return;
+    }
 
     if (!window.currentProduct) {
         showToast('Product details not loaded yet. Please wait.', 'error');
@@ -267,6 +276,22 @@ async function addToCart() {
 }
 
 async function buyNow() {
+    // Check if user is logged in
+    if (!Auth.isLoggedIn()) {
+        showToast('Please log in to proceed with your purchase.', 'error');
+        // Show login modal
+        const loginModal = document.getElementById('loginModal');
+        if (loginModal) {
+            loginModal.classList.add('show');
+            // Ensure the user login tab is active
+            document.querySelector('#loginTabs .tab-btn[data-tab="user-login"]').click();
+        } else {
+            // Fallback: redirect to index page with login parameter
+            window.location.href = 'index.html?showLogin=true';
+        }
+        return;
+    }
+
     if (!window.currentProduct) {
         showToast('Product details not loaded yet. Please wait.', 'error');
         return;
@@ -293,7 +318,7 @@ function shareProduct() {
             url: productUrl,
         })
         .then(() => showToast('Product shared successfully!', 'success'))
-        .catch((error) => console.log('Error sharing', error));
+        .catch((error) => showToast('Error sharing product', 'error'));
     } else {
         // Fallback for browsers that do not support the Web Share API
         navigator.clipboard.writeText(`${text} ${productUrl}`).then(() => {
@@ -387,22 +412,17 @@ function validateQuantityInput() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('DOM fully loaded and parsed');
     // Initialize the page by loading product details
     loadProductDetails();
 
     // Attach event listeners
     const addToCartBtn = document.getElementById('addToCartBtn');
     if (addToCartBtn) {
-        console.log('Found addToCartBtn, attaching listener.');
         addToCartBtn.addEventListener('click', addToCart);
-    } else {
-        console.error('addToCartBtn not found!');
     }
     
     const buyNowBtn = document.getElementById('buyNowBtn');
     if (buyNowBtn) {
-        console.log('Found buyNowBtn, attaching listener.');
         buyNowBtn.addEventListener('click', buyNow);
     }
 

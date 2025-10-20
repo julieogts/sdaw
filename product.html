@@ -597,7 +597,6 @@
 
         // Add Google Sign-In handler function
         function handleGoogleSignIn(response) {
-            console.log('Google Sign-In Response:', response);
             const idToken = response.credential;
             if (!idToken) {
                 console.error('No idToken received');
