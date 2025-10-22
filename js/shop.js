@@ -130,10 +130,6 @@ function filterAndSortProducts(selectedCategory = null) {
         const maxPrice = maxPriceInput ? parseFloat(maxPriceInput.value) || Infinity : Infinity;
         const sortBy = document.getElementById('sort-by').value;
         
-            sortBy,
-            totalProducts: products.length
-        });
-        
         if (products.length === 0) {
             console.error('No products available to filter!');
             return;
@@ -194,8 +190,6 @@ function filterAndSortProducts(selectedCategory = null) {
             
             return matchesSearch && categoryMatches && matchesPrice;
         });
-            products: filteredProducts
-        });
         
         // Then sort the filtered products
         switch(sortBy) {
@@ -213,8 +207,6 @@ function filterAndSortProducts(selectedCategory = null) {
                 // Keep original order
                 break;
         }
-            products: filteredProducts
-        });
         
         // Reset pagination window when filters change
         paginationStart = 1;
@@ -229,11 +221,6 @@ function displayProducts(productsToDisplay = filteredProducts) {
     const start = (currentPage - 1) * productsPerPage;
     const end = start + productsPerPage;
     const displayedProducts = productsToDisplay.slice(start, end);
-        end,
-        totalProducts: productsToDisplay.length,
-        displayedProducts: displayedProducts.length,
-        products: displayedProducts
-    });
     
     // Add cart wiggle animation when products are first displayed
     if (displayedProducts.length > 0) {
@@ -582,9 +569,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         filterAndSortProducts();
-            showToast('Price filter applied');
+        showToast('Price filter applied');
     });
-    }
+}
 
     // Allow Enter key to apply price range filter
     ['minPrice', 'maxPrice'].forEach(id => {
