@@ -3380,7 +3380,7 @@
                             <td>${order.orderNumber || this.generateOrderNumber(order)}</td>
                             <td>${order.fullName || order.buyerinfo || 'N/A'}</td>
                             <td>${(order.itemsordered || []).length} items</td>
-                            <td>₱${order.total.toFixed(2)}</td>
+                            <td>₱${formatPrice(order.total)}</td>
                             <td>
                                 <span class="payment-method ${order.paymentMethod || 'cod'}">
                                     ${this.formatPaymentMethod(order.paymentMethod || 'cod')}
