@@ -1545,6 +1545,14 @@
                 }
             }
 
+        // Helper function to format prices with commas
+        function formatPrice(amount) {
+            return parseFloat(amount).toLocaleString('en-PH', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+        }
+
         // Enhanced Staff Dashboard Class
         class EnhancedStaffDashboard {
             constructor() {
@@ -1683,7 +1691,7 @@
                                  onerror="this.src='images/sanrico_logo_1.png'">
                             <div class="pos-search-result-info">
                                 <div class="pos-search-result-name">${product.name}</div>
-                                <div class="pos-search-result-price">₱${product.price.toFixed(2)}</div>
+                                <div class="pos-search-result-price">${formatPrice(product.price) || '₱0.00'}</div>
                                 <div class="pos-search-result-stock">Stock: ${product.stock}</div>
                             </div>
                         </div>
@@ -2252,7 +2260,7 @@
                         ordersNavButton.title = `${ordersRequiringAction} action${ordersRequiringAction > 1 ? 's' : ''} required`;
                     }
                     
-                    document.getElementById('totalRevenue').textContent = `₱${totalRevenue.toFixed(2)}`;
+                    document.getElementById('totalRevenue').textContent = formatPrice(totalRevenue);
                 } else {
                     // Fallback to local calculations
                     const pendingOrders = this.orders.filter(order => {
@@ -2324,7 +2332,7 @@
                         ordersNavButton.title = `${ordersRequiringAction} action${ordersRequiringAction > 1 ? 's' : ''} required`;
                     }
                     
-                    document.getElementById('totalRevenue').textContent = `₱${totalRevenue.toFixed(2)}`;
+                    document.getElementById('totalRevenue').textContent = formatPrice(totalRevenue);
                 }
                 
                 // Note: Walk-in orders will be loaded from database in future update
@@ -2755,7 +2763,7 @@
                         type: 'order',
                         orderId: order._id,
                         title: `New Order ${order.orderNumber || this.generateOrderNumber(order)}`,
-                        description: `${order.fullName || order.buyerinfo || 'Unknown Customer'} - ₱${(parseFloat(order.total) || 0).toFixed(2)}`,
+                        description: `${order.fullName || order.buyerinfo || 'Unknown Customer'} - ${formatPrice(order.total) || 0}`,
                         time: new Date(order.createdAt || order.orderDate || order.original_date)
                     }))
                 ].sort((a, b) => b.time - a.time).slice(0, 5);
@@ -2863,7 +2871,7 @@
                             <span class="category-badge">${this.formatCategoryName(product.category)}</span>
                         </td>
                         <td>
-                            <span class="product-price-cell">₱${product.price.toFixed(2)}</span>
+                            <span class="product-price-cell">₱${formatPrice(product.price)}</span>
                         </td>
                         <td>
                             <span class="stock-quantity ${product.stock === 0 ? 'stock-out' : product.stock <= 5 ? 'stock-low' : 'stock-in'}">${product.stock}</span>
@@ -2995,14 +3003,14 @@
                             <td>${order.orderNumber || this.generateOrderNumber(order)}</td>
                             <td>${order.fullName || order.buyerinfo || 'N/A'}</td>
                             <td>${(order.itemsordered || []).length} items</td>
-                            <td>₱${(parseFloat(order.total) || 0).toFixed(2)}</td>
+                            <td>₱${order.total.toFixed(2)}</td>
                             <td>
                                 <span class="payment-method ${order.paymentMethod || 'cod'}">
                                     ${this.formatPaymentMethod(order.paymentMethod || 'cod')}
                                 </span>
                                 ${order.paymentType === 'split' && order.collection !== 'delivered' ? `
                                     <div style="margin-top: 0.25rem; font-size: 0.75rem; color: #d32f2f; font-weight: 500;">
-                                        💰 Balance: ₱${((parseFloat(order.total) || 0) - (parseFloat(order.paymentAmount) || 0)).toFixed(2)}
+                                        💰 Balance: ₱${formatPrice((parseFloat(order.total) || 0) - (parseFloat(order.paymentAmount) || 0))}
                                     </div>
                                 ` : ''}
                             </td>
@@ -3180,7 +3188,7 @@
                         </div>
                         <div class="pos-product-info">
                             <h4>${product.name}</h4>
-                            <div class="pos-product-price">₱${product.price.toFixed(2)}</div>
+                            <div class="pos-product-price">₱${formatPrice(product.price)}</div>
                             <div class="pos-product-stock">Stock: ${product.stock}</div>
                         </div>
                     </div>
@@ -3226,13 +3234,13 @@
                 grid.innerHTML = filteredProducts.map(product => `
                     <div class="pos-product-card" onclick="staffDashboard.addToCart('${product.id}')">
                         <div class="pos-product-image">
-                            <img src="${product.image.startsWith('data:image') ? product.image : 'images/' + product.image}" 
-                                 alt="${product.name}" 
+                            <img src="${product.image.startsWith('data:image') ? product.image : 'images/' + product.image}"
+                                 alt="${product.name}"
                                  onerror="this.src='images/sanrico_logo_1.png'">
                         </div>
                         <div class="pos-product-info">
                             <h4>${product.name}</h4>
-                            <div class="pos-product-price">₱${product.price.toFixed(2)}</div>
+                            <div class="pos-product-price">₱${formatPrice(product.price)}</div>
                             <div class="pos-product-stock">Stock: ${product.stock}</div>
                         </div>
                     </div>
@@ -3302,7 +3310,7 @@
                             </div>
                             <div class="order-item-details">
                                 <div class="order-item-name">${item.name}</div>
-                                <div class="order-item-price">₱${item.price.toFixed(2)} each</div>
+                                <div class="order-item-price">₱${formatPrice(item.price)} each</div>
                                 <div class="order-item-stock">Stock: ${item.stock}</div>
                             </div>
                             <div class="order-item-controls">
@@ -3320,7 +3328,7 @@
                                         </svg>
                                     </button>
                                 </div>
-                                <div class="order-item-total">₱${(item.price * item.quantity).toFixed(2)}</div>
+                                <div class="order-item-total">${formatPrice(item.price * item.quantity)}</div>
                                 <button class="remove-item-btn" onclick="staffDashboard.removeFromCart(${index})" title="Remove item">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -3363,8 +3371,8 @@
                 const subtotal = this.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
                 const total = subtotal;
 
-                document.getElementById('subtotal').textContent = `₱${subtotal.toFixed(2)}`;
-                document.getElementById('total').textContent = `₱${total.toFixed(2)}`;
+                document.getElementById('subtotal').textContent = formatPrice(subtotal);
+                document.getElementById('total').textContent = formatPrice(total);
             }
 
             showPaymentModal() {
@@ -3669,9 +3677,9 @@
                     <div class="order-item-modern">
                         <div class="item-info-modern">
                             <div class="item-name-modern">${item.item_name || 'Unknown Item'}</div>
-                            <div class="item-details-modern">Qty: ${item.amount_per_item || 1} × ₱${(parseFloat(item.price_per_item) || 0).toFixed(2)}</div>
+                            <div class="item-details-modern">Qty: ${item.amount_per_item || 1} × ${formatPrice(item.price_per_item) || '₱0.00'}</div>
                         </div>
-                        <div class="item-total-modern">₱${(parseFloat(item.total_item_price) || 0).toFixed(2)}</div>
+                        <div class="item-total-modern">${formatPrice(item.total_item_price) || '₱0.00'}</div>
                     </div>
                 `).join('');
                 
@@ -3679,10 +3687,10 @@
                 const subtotal = parseFloat(order.subtotal) || (order.itemsordered || []).reduce((total, item) => total + (parseFloat(item.total_item_price) || 0), 0);
                 const deliveryFee = parseFloat(order.deliveryFee) || 0;
                 const total = parseFloat(order.total) || (subtotal + deliveryFee);
-                
-                document.getElementById('staffModalSubtotal').textContent = `₱${subtotal.toFixed(2)}`;
-                document.getElementById('staffModalDeliveryFee').textContent = `₱${deliveryFee.toFixed(2)}`;
-                document.getElementById('staffModalTotal').textContent = `₱${total.toFixed(2)}`;
+
+                document.getElementById('staffModalSubtotal').textContent = formatPrice(subtotal);
+                document.getElementById('staffModalDeliveryFee').textContent = formatPrice(deliveryFee);
+                document.getElementById('staffModalTotal').textContent = formatPrice(total);
                 
                 // Populate staff technical information with better formatting
                 const technicalInfo = document.getElementById('staffOrderTechnicalInfo');

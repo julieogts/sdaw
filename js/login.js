@@ -230,7 +230,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const items = cart.getItems();
         if (!items.length) {
             cartDropdownContent.innerHTML = `
-                <div class="cart-empty">
+function formatPHPPrice(price) {
+    return new Intl.NumberFormat('en-PH', {
+        style: 'currency',
+        currency: 'PHP'
+    }).format(price);
+}
+
+            <div class="cart-empty">
                     <img src="images/cart-empty.png" alt="Empty Cart" />
                     <div>Empty Cart</div>
                 </div>
@@ -242,7 +249,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <img src="${item.image ? (item.image.startsWith('data:image') ? item.image : 'images/' + item.image) : 'images/sanrico_logo_1.png'}" onerror="this.src='images/sanrico_logo_1.png'" alt="${item.name}">
                 <div class="cart-item-details">
                     <div class="cart-item-title">${item.name}</div>
-                    <div class="cart-item-price">₱${item.price.toFixed(2)} | Qty: ${item.quantity}</div>
+                    <div class="cart-item-price">${formatPHPPrice(item.price)} | Qty: ${item.quantity}</div>
                 </div>
             </div>
         `).join('');
@@ -252,7 +259,7 @@ document.addEventListener('DOMContentLoaded', () => {
             ${itemsHtml}
             <div class="cart-subtotal">
                 <span>Subtotal</span>
-                <span>₱${subtotal.toFixed(2)}</span>
+                <span>${formatPHPPrice(subtotal)}</span>
             </div>
             <div class="cart-actions">
                 <button class="checkout-btn" onclick="window.location.href='checkout.html'">CHECKOUT</button>

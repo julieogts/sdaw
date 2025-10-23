@@ -1,5 +1,12 @@
 // Product.js - Database-driven product loading
 
+function formatPHPPrice(price) {
+    return new Intl.NumberFormat('en-PH', {
+        style: 'currency',
+        currency: 'PHP'
+    }).format(price);
+}
+
 // Load product from database based on URL parameter
 async function loadProductDetails() {
     const productId = getUrlParameter('id');
@@ -44,7 +51,7 @@ async function loadProductDetails() {
                 breadcrumbProductName.textContent = product.name;
             }
             
-            document.getElementById('productPrice').textContent = price.toFixed(2);
+            document.getElementById('productPrice').textContent = '₱' + price.toFixed(2);
             
 
             
@@ -513,7 +520,7 @@ function displayRelatedProducts(products) {
                     <div class="related-product-content">
                         <div class="related-product-brand">${product.category}</div>
                         <h3 class="related-product-title">${product.name}</h3>
-                        <div class="related-product-price">₱${price.toFixed(2)}</div>
+                        <div class="related-product-price">${formatPHPPrice(price)}</div>
                     </div>
                 </a>
             </div>
@@ -562,4 +569,4 @@ function displayRelatedProducts(products) {
             BACK TO ${products[0].category.toUpperCase().replace('-', ' ')}
         `;
     }
-} 
+}

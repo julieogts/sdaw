@@ -1,3 +1,10 @@
+function formatPHPPrice(price) {
+    return new Intl.NumberFormat('en-PH', {
+        style: 'currency',
+        currency: 'PHP'
+    }).format(price);
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
     const cartItemsContainer = document.getElementById('cartItems');
     const emptyCartDiv = document.getElementById('emptyCart');
@@ -60,7 +67,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                             <h3>${item.name}</h3>
                         </div>
                     </td>
-                    <td class="price-cell">₱${(isNaN(priceNum) ? 0 : priceNum).toFixed(2)}</td>
+                    <td class="price-cell">${formatPHPPrice(isNaN(priceNum) ? 0 : priceNum)}</td>
                     <td class="quantity-cell">
                         <div class="quantity-controls">
                             <button class="minus-btn" data-item-id="${item.id}">-</button>
@@ -68,7 +75,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                             <button class="plus-btn" data-item-id="${item.id}">+</button>
                         </div>
                     </td>
-                    <td class="subtotal-cell">₱${itemTotal.toFixed(2)}</td>
+                    <td class="subtotal-cell">${formatPHPPrice(itemTotal)}</td>
                     <td class="remove-cell">
                         <button class="remove-item" onclick="removeItem('${item.id}')">×</button>
                     </td>
@@ -289,10 +296,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             return sum + ((isNaN(p) ? 0 : p) * q);
         }, 0);
         if (subtotalElement) {
-            subtotalElement.textContent = `₱${subtotal.toFixed(2)}`;
+            subtotalElement.textContent = formatPHPPrice(subtotal);
         }
         if (totalElement) {
-            totalElement.textContent = `₱${subtotal.toFixed(2)}`;
+            totalElement.textContent = formatPHPPrice(subtotal);
         }
     }
 
@@ -369,4 +376,4 @@ function proceedToCheckout(selectedItems) {
     // Example: Save selected items to sessionStorage and redirect
     sessionStorage.setItem('checkoutItems', JSON.stringify(selectedItems));
     window.location.href = 'checkout.html';
-} 
+}

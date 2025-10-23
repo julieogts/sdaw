@@ -1,3 +1,10 @@
+function formatPHPPrice(price) {
+    return new Intl.NumberFormat('en-PH', {
+        style: 'currency',
+        currency: 'PHP'
+    }).format(price);
+}
+
 // Handle header search functionality
 document.addEventListener('DOMContentLoaded', () => {
     const headerSearchForm = document.querySelector('.header-search');
@@ -123,7 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <img src="${product.image || 'images/sanrico_logo_1.png'}" alt="${product.name}">
                     <div class="search-result-info">
                         <div class="search-result-name">${product.name}</div>
-                        <div class="search-result-price">₱${product.price.toFixed(2)}</div>
+                        <div class="search-result-price">${formatPHPPrice(product.price)}</div>
                     </div>
                 </a>
             `).join('');
@@ -212,4 +219,4 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
-}); 
+});

@@ -964,13 +964,13 @@
                                     <div class="checkout-item-details">
                                         <h4 class="checkout-item-name">${item.name || 'Unknown Product'}</h4>
                                         <div class="checkout-item-meta">
-                                            <span class="checkout-item-price">₱${item.price.toFixed(2)}</span>
+                                            <span class="checkout-item-price">₱${item.price.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
                                             <span class="checkout-item-qty">Qty: ${item.quantity || 1}</span>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="checkout-item-total">
-                                    ₱${(item.price * (item.quantity || 1)).toFixed(2)}
+                                    ₱${(item.price * (item.quantity || 1)).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
                                 </div>
                             </div>
                         `).join('')}
@@ -1044,10 +1044,10 @@
                 const subtotal = myCart.getSubtotal();
                 const deliveryFee = 0; // hardcoded for now
                 const fullTotal = subtotal + deliveryFee;
-                
+
                 // Update subtotal and delivery fee
-                document.getElementById('subtotal').textContent = `₱${subtotal.toFixed(2)}`;
-                document.getElementById('deliveryFee').textContent = `₱${deliveryFee.toFixed(2)}`;
+                document.getElementById('subtotal').textContent = `₱${subtotal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+                document.getElementById('deliveryFee').textContent = `₱${deliveryFee.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
                 
                 // Check if split payment is selected
                 const paymentTypeEl = document.getElementById('payment-type');

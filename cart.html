@@ -622,7 +622,7 @@
                         <h3>${item.name}</h3>
                         </div>
                     </td>
-                    <td class="price-cell">₱${item.price.toFixed(2)}</td>
+                    <td class="price-cell">₱${item.price.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
                     <td class="quantity-cell">
                         <div class="quantity-controls">
                             <button class="quantity-btn minus-btn" data-item-id="${item.id}">-</button>
@@ -640,7 +640,7 @@
                         ${availableStock === 0 ? '<div class="stock-warning">Out of Stock</div>' : ''}
                         ${availableStock > 0 && availableStock < 5 ? `<div class="stock-warning">Only ${availableStock} left</div>` : ''}
                     </td>
-                    <td class="subtotal-cell">₱${(item.price * item.quantity).toFixed(2)}</td>
+                    <td class="subtotal-cell">₱${(item.price * item.quantity).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
                     <td class="action-cell">
                     <button class="remove-item" onclick="removeItem('${item.id}')">×</button>
                     </td>
@@ -861,10 +861,10 @@
         // Update total price
         function updateTotal() {
             const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            document.getElementById('subtotal').textContent = `₱${subtotal.toFixed(2)}`;
-            
+            document.getElementById('subtotal').textContent = `₱${subtotal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+
             const total = subtotal;
-            document.getElementById('total').textContent = `₱${total.toFixed(2)}`;
+            document.getElementById('total').textContent = `₱${total.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
             
             // Update cart tooltip with total price
             updateCartTooltip(subtotal);
@@ -874,7 +874,7 @@
         function updateCartTooltip(amount) {
             const cartBtn = document.getElementById('cartBtn');
             if (cartBtn) {
-                cartBtn.setAttribute('data-tooltip', `₱${amount.toFixed(2)}`);
+                cartBtn.setAttribute('data-tooltip', `₱${amount.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`);
             }
         }
 

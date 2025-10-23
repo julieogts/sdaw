@@ -1,3 +1,10 @@
+function formatPHPPrice(price) {
+    return new Intl.NumberFormat('en-PH', {
+        style: 'currency',
+        currency: 'PHP'
+    }).format(price);
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     const cartTabButton = document.getElementById('cartTabButton');
     const cartTabContent = document.getElementById('cartTabContent');
@@ -195,7 +202,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Update cart tooltip
         if (cartTooltipElement) {
-            cartTooltipElement.textContent = `₱${subtotal.toFixed(2)}`;
+            cartTooltipElement.textContent = formatPHPPrice(subtotal);
         }
 
         if (!cartItemsContainer) return;
@@ -241,7 +248,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 <span>${item.quantity}</span>
                                 <button class="quantity-btn increase" aria-label="Increase quantity">+</button>
                             </div>
-                            <div class="cart-item-price">₱${item.price.toFixed(2)}</div>
+                            <div class="cart-item-price">${formatPHPPrice(item.price)}</div>
                         </div>
                     </div>
                 </div>
@@ -249,7 +256,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }).join('');
 
         if (subtotalElement) {
-            subtotalElement.textContent = `₱${subtotal.toFixed(2)}`;
+            subtotalElement.textContent = formatPHPPrice(subtotal);
         }
 
         // Add event listeners for quantity buttons
@@ -370,4 +377,4 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('goToCartBtn')?.addEventListener('click', () => {
         window.location.href = 'cart.html';
     });
-}); 
+});

@@ -4,6 +4,14 @@ let filteredProducts = [];
 let currentPage = 1;
 const productsPerPage = 12;
 let currentMode = 'drag'; // 'drag' or 'multi'
+
+// Utility function to format prices in PHP currency with comma separators
+function formatPHPPrice(price) {
+    return new Intl.NumberFormat('en-PH', {
+        style: 'currency',
+        currency: 'PHP'
+    }).format(price);
+}
 // Multi-mode removed - drag and drop only
 // Pagination window state (5 pages at a time)
 let paginationStart = 1; // first page number currently shown in the window
@@ -269,7 +277,7 @@ function displayProducts(productsToDisplay = filteredProducts) {
                          alt="${product.name}"
                          style="width: 100%; height: 100%; object-fit: cover;">
                     <div class="product-img-overlay">
-                        <span class="product-price">₱${product.price.toFixed(2)}</span>
+                        <span class="product-price">${formatPHPPrice(product.price)}</span>
                     </div>
                 </div>
                 <div class="product-content">

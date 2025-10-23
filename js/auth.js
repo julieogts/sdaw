@@ -1,3 +1,10 @@
+function formatPHPPrice(price) {
+    return new Intl.NumberFormat('en-PH', {
+        style: 'currency',
+        currency: 'PHP'
+    }).format(price);
+}
+
 class Auth {
     static googleRegister(idToken) {
         const payload = this.decodeGoogleToken(idToken);
@@ -355,7 +362,7 @@ class Auth {
                 const cartData = JSON.parse(localStorage.getItem(cartKey) || '{}');
                 const items = cartData.items || [];
                 const subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-                cartBtn.setAttribute('data-tooltip', `₱${subtotal.toFixed(2)}`);
+                cartBtn.setAttribute('data-tooltip', formatPHPPrice(subtotal));
             } catch (error) {
                 console.error('Error calculating cart subtotal for tooltip:', error);
                 cartBtn.setAttribute('data-tooltip', '₱0.00');
