@@ -2372,9 +2372,9 @@
                         return;
                     }
 
-                    // Fetch returned orders from the returned collection
-                    const response = await fetch('http://localhost:3000/api/orders/returns');
-                    if (!response.ok) throw new Error('Failed to fetch returns');
+                    // Fetch return requests for staff review
+                    const response = await fetch('http://localhost:3000/api/orders/return-requests');
+                    if (!response.ok) throw new Error('Failed to fetch return requests');
 
                     this.returns = await response.json();
                     
