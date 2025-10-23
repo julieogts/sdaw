@@ -240,6 +240,88 @@
             border-color: var(--primary);
         }
         
+        /* New Transaction Dropdown Styles */
+        .new-transaction-container {
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .new-transaction-dropdown {
+            position: absolute;
+            top: calc(100% + 0.5rem);
+            right: 0;
+            background: var(--card-bg);
+            border: 1px solid var(--input-border);
+            border-radius: var(--border-radius);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            padding: 1rem;
+            width: 280px;
+            z-index: 1000;
+            display: none;
+        }
+
+        .new-transaction-dropdown.show {
+            display: block;
+        }
+
+        .dropdown-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--input-border);
+        }
+
+        .dropdown-header h4 {
+            margin: 0;
+            color: var(--text);
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .dropdown-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--dark-gray);
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .dropdown-close:hover {
+            background: var(--input-bg);
+            color: var(--text);
+        }
+
+        .dropdown-body {
+            margin-bottom: 1.5rem;
+        }
+
+        .dropdown-actions {
+            display: flex;
+            gap: 0.75rem;
+            justify-content: flex-end;
+        }
+
+        .dropdown-actions .action-btn {
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+        }
+
+        /* Active state for new transaction button */
+        #newTransactionBtn.active {
+            background: var(--primary);
+            color: #fff;
+            border-color: var(--primary);
+        }
+        
         /* Responsive adjustments */
         @media (max-width: 768px) {
             .search-and-date-section {
@@ -255,6 +337,25 @@
                 left: 50%;
                 transform: translateX(-50%);
                 min-width: 280px;
+            }
+            
+            .new-transaction-dropdown {
+                right: 0;
+                left: auto;
+                transform: none;
+                width: 280px;
+                max-width: calc(100vw - 2rem);
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .new-transaction-dropdown {
+                right: 0;
+                left: auto;
+                transform: none;
+                width: calc(100vw - 2rem);
+                max-width: none;
+                margin: 0 1rem;
             }
         }
         
@@ -1003,7 +1104,7 @@
                     <div class="pos-controls" style="display: flex; gap: 1rem; align-items: center;">
                         <button class="action-btn secondary" id="clearCartBtn">Clear Cart</button>
                         <div class="new-transaction-container">
-                            <button class="action-btn primary" id="newTransactionBtn">New Transaction ▼</button>
+                            <button type="button" class="action-btn primary" id="newTransactionBtn">New Transaction ▼</button>
                             <div class="new-transaction-dropdown" id="newTransactionDropdown">
                                 <div class="dropdown-header">
                                     <h4 id="newTransactionOrderId">Order #TXN-001</h4>
@@ -1081,7 +1182,7 @@
                                 Complete Transaction
                             </button>
                             <div class="cancel-transaction-link-container">
-                                <a href="#" class="cancel-transaction-link" onclick="event.preventDefault(); staffDashboard.cancelTransaction();">
+                                <a href="#" class="cancel-transaction-link" onclick="event.preventDefault(); console.log('Cancel transaction clicked'); if (window.staffDashboard) { window.staffDashboard.cancelTransaction(); } else { console.error('staffDashboard not found'); }">
                                     Cancel Transaction
                                 </a>
                             </div>
@@ -1500,7 +1601,7 @@
                     
                     // Initialize dashboard with a slight delay for smooth transition
                     setTimeout(() => {
-                        const staffDashboard = new EnhancedStaffDashboard();
+                        window.staffDashboard = new EnhancedStaffDashboard();
                         
                         // Hide loading screen after dashboard is initialized
                         setTimeout(() => {
@@ -2816,23 +2917,45 @@
                     this.clearCart();
                 });
 
-                document.getElementById('newTransactionBtn').addEventListener('click', (e) => {
+                const newTransactionBtn = document.getElementById('newTransactionBtn');
+                if (newTransactionBtn) {
+                    console.log('Attaching event listener to newTransactionBtn');
+                    newTransactionBtn.addEventListener('click', (e) => {
+                        console.log('New Transaction button clicked');
                     e.stopPropagation();
                     this.toggleNewTransactionDropdown();
                 });
+                } else {
+                    console.error('newTransactionBtn element not found!');
+                }
 
                 // New transaction dropdown events
-                document.getElementById('newTransactionClose').addEventListener('click', () => {
+                const newTransactionClose = document.getElementById('newTransactionClose');
+                if (newTransactionClose) {
+                    newTransactionClose.addEventListener('click', () => {
                     this.closeNewTransactionDropdown();
                 });
+                } else {
+                    console.error('newTransactionClose element not found!');
+                }
 
-                document.getElementById('cancelNewTransaction').addEventListener('click', () => {
+                const cancelNewTransaction = document.getElementById('cancelNewTransaction');
+                if (cancelNewTransaction) {
+                    cancelNewTransaction.addEventListener('click', () => {
                     this.closeNewTransactionDropdown();
                 });
+                } else {
+                    console.error('cancelNewTransaction element not found!');
+                }
 
-                document.getElementById('startNewTransaction').addEventListener('click', () => {
+                const startNewTransaction = document.getElementById('startNewTransaction');
+                if (startNewTransaction) {
+                    startNewTransaction.addEventListener('click', () => {
                     this.startNewTransaction();
                 });
+                } else {
+                    console.error('startNewTransaction element not found!');
+                }
 
                 // Close dropdown when clicking outside
                 document.addEventListener('click', (e) => {
@@ -2841,6 +2964,16 @@
                     
                     if (dropdown && container && !container.contains(e.target)) {
                         this.closeNewTransactionDropdown();
+                    }
+                });
+                
+                // Reposition dropdown on window resize
+                window.addEventListener('resize', () => {
+                    const dropdown = document.getElementById('newTransactionDropdown');
+                    const button = document.getElementById('newTransactionBtn');
+                    
+                    if (dropdown && dropdown.classList.contains('show') && button) {
+                        this.positionDropdown(dropdown, button);
                     }
                 });
 
@@ -3746,7 +3879,7 @@
                     this.cart = [];
                     this.updateCartDisplay();
                     this.currentTransaction = null;
-                    this.updateCustomerInfoDisplay('', '', '');
+                    this.updateCustomerInfoDisplay('', '', '', false);
                     
                     // Show success toast
                     showToast('Order complete! Sending data to database...', 'success');
@@ -3770,7 +3903,7 @@
                     this.cart = [];
                     this.updateCartDisplay();
                     this.currentTransaction = null;
-                    this.updateCustomerInfoDisplay('', '', '');
+                    this.updateCustomerInfoDisplay('', '', '', false);
                 }
             }
 
@@ -4386,6 +4519,10 @@
 
             // Cancel Transaction Method
             cancelTransaction() {
+                console.log('cancelTransaction called');
+                console.log('Current transaction:', this.currentTransaction);
+                console.log('Cart length:', this.cart.length);
+                
                 // Check if there's an active transaction
                 if (!this.currentTransaction && this.cart.length === 0) {
                     showToast('No active transaction to cancel', 'warning');
@@ -4480,7 +4617,7 @@
                 this.updateCartDisplay();
                 
                 // Update customer info display with order ID and customer info (no payment method)
-                this.updateCustomerInfoDisplay(finalCustomerName, '', orderId, isWalkIn);
+                this.updateCustomerInfoDisplay(finalCustomerName, 'cash', orderId, isWalkIn);
                 
                 // Store current transaction info
                 this.currentTransaction = {
@@ -4499,8 +4636,11 @@
             }
 
             showNewTransactionDropdown() {
+                console.log('showNewTransactionDropdown called');
                 const dropdown = document.getElementById('newTransactionDropdown');
                 const button = document.getElementById('newTransactionBtn');
+                console.log('Dropdown element:', dropdown);
+                console.log('Button element:', button);
                 
                 // Generate new order ID
                 const orderId = this.generateTransactionOrderId();
@@ -4509,13 +4649,41 @@
                 // Clear form fields
                 document.getElementById('newTransactionCustomerName').value = '';
                 
+                // Smart positioning to prevent horizontal scrolling
+                this.positionDropdown(dropdown, button);
+                
                 dropdown.classList.add('show');
                 button.classList.add('active');
+                console.log('Added show class to dropdown');
                 
                 // Focus on customer name field
                 setTimeout(() => {
                     document.getElementById('newTransactionCustomerName').focus();
                 }, 100);
+            }
+            
+            positionDropdown(dropdown, button) {
+                // Reset any previous positioning
+                dropdown.style.left = '';
+                dropdown.style.right = '';
+                dropdown.style.transform = '';
+                
+                const buttonRect = button.getBoundingClientRect();
+                const dropdownWidth = 280; // width from CSS
+                const viewportWidth = window.innerWidth;
+                const spaceOnLeft = buttonRect.left;
+                
+                // Always position to extend leftward from the button
+                // Check if there's enough space to the left
+                if (spaceOnLeft >= dropdownWidth) {
+                    // Position so right edge aligns with button's right edge
+                    dropdown.style.right = '0';
+                } else {
+                    // If not enough space, position to avoid going off-screen
+                    const maxLeft = Math.max(0, buttonRect.right - dropdownWidth);
+                    dropdown.style.right = '0';
+                    dropdown.style.transform = `translateX(${Math.max(0, dropdownWidth - buttonRect.right)}px)`;
+                }
             }
 
             closeNewTransactionDropdown() {
@@ -4527,11 +4695,15 @@
             }
 
             toggleNewTransactionDropdown() {
+                console.log('toggleNewTransactionDropdown called');
                 const dropdown = document.getElementById('newTransactionDropdown');
+                console.log('Dropdown element:', dropdown);
                 
                 if (dropdown.classList.contains('show')) {
+                    console.log('Closing dropdown');
                     this.closeNewTransactionDropdown();
                 } else {
+                    console.log('Opening dropdown');
                     this.showNewTransactionDropdown();
                 }
             }
@@ -5324,8 +5496,7 @@
             }
         }
 
-        // Initialize Enhanced Staff Dashboard
-        const staffDashboard = new EnhancedStaffDashboard();
+        // Enhanced Staff Dashboard is initialized above in the authentication flow
 
         // Close notification dropdown when clicking outside
         document.addEventListener('click', (e) => {

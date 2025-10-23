@@ -20,6 +20,12 @@
 /* ===== BASE STYLES ===== */
 * {
   font-family: var(--font-family) !important;
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
 }
 
 /* ===== STAFF HEADER STYLES ===== */
@@ -333,6 +339,7 @@
   display: flex;
   min-height: calc(100vh - 80px);
   background: var(--bg);
+  box-sizing: border-box;
 }
 
 /* ===== SIDEBAR STYLES ===== */
@@ -433,10 +440,12 @@
   flex: 1;
   padding: 2rem;
   overflow-y: auto;
+  box-sizing: border-box;
 }
 
 .content-section {
   display: none;
+  box-sizing: border-box;
 }
 
 .content-section.active {
@@ -450,6 +459,7 @@
   margin-bottom: 2rem;
   flex-wrap: wrap;
   gap: 1rem;
+  box-sizing: border-box;
 }
 
 .section-header h1 {
@@ -464,6 +474,7 @@
   align-items: center;
   gap: 1rem;
   flex-wrap: wrap;
+  box-sizing: border-box;
 }
 
 .date-range-selector {
@@ -1243,9 +1254,13 @@
 /* ===== POS LAYOUT ===== */
 .pos-layout {
   display: grid;
-  grid-template-columns: 2fr 340px !important;
+  grid-template-columns: 1.5fr minmax(380px, 420px);
   gap: 2rem;
   height: calc(100vh - 200px);
+  overflow-x: hidden;
+  max-width: 100%;
+  box-sizing: border-box;
+  width: 100%;
 }
 
 .pos-products {
@@ -1257,6 +1272,7 @@
   border: 1px solid var(--input-border);
   max-height: calc(100vh - 200px);
   overflow-y: auto;
+  box-sizing: border-box;
 }
 
 .pos-search {
@@ -1481,9 +1497,9 @@
 
 /* ===== POS CART ===== */
 .pos-cart {
-  min-width: 340px !important;
-  max-width: 340px !important;
-  width: 340px !important;
+  min-width: 380px !important;
+  max-width: 420px !important;
+  width: 100% !important;
   box-sizing: border-box;
   height: calc(100vh - 80px) !important;
   min-height: calc(100vh - 80px) !important;
@@ -2451,13 +2467,14 @@
   }
 
   .pos-layout {
-    grid-template-columns: 1fr 340px !important;
+    grid-template-columns: 1fr minmax(320px, 380px);
+    gap: 1.5rem;
   }
 
   .pos-cart {
-    min-width: 340px !important;
-    max-width: 340px !important;
-    width: 340px !important;
+    min-width: 320px !important;
+    max-width: 380px !important;
+    width: 100% !important;
   }
 
   .pos-products-grid {
@@ -2672,6 +2689,20 @@
     flex-direction: row !important;
     gap: 0.5rem;
     justify-content: flex-start;
+  }
+
+  .pos-layout {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .pos-cart {
+    min-width: 100% !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 400px !important;
+    max-height: 500px !important;
   }
 }
 
