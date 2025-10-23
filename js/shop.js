@@ -492,6 +492,11 @@ function updateTopLoginBtn() {
 
 // Initialize the page
 document.addEventListener('DOMContentLoaded', () => {
+    // Only run shop functionality on shop pages
+    if (!window.location.pathname.includes('shop.html')) {
+        return;
+    }
+    
     // Update cart count and login state
     Auth.updateCartCount();
     updateTopLoginBtn();

@@ -350,7 +350,9 @@ function setupQuantityControls() {
     const plusBtn = document.getElementById('plusBtn');
     const minusBtn = document.getElementById('minusBtn');
     
-    if (!quantityInput || !plusBtn || !minusBtn) return;
+    if (!quantityInput || !plusBtn || !minusBtn) {
+        return;
+    }
     
     const updateQuantity = (amount) => {
         let currentValue = parseInt(quantityInput.value, 10);
@@ -367,7 +369,6 @@ function setupQuantityControls() {
         }
         
         quantityInput.value = newValue;
-        validateQuantityInput();
     };
 
     const startUpdating = (amount) => {
@@ -393,7 +394,17 @@ function setupQuantityControls() {
     plusBtn.addEventListener('mouseleave', stopUpdating);
     minusBtn.addEventListener('mouseleave', stopUpdating);
 
-    quantityInput.addEventListener('input', validateQuantityInput);
+    // Remove all existing event listeners first
+    quantityInput.removeEventListener('input', handleQuantityInput);
+    quantityInput.removeEventListener('blur', handleQuantityBlur);
+    
+    // Add new event listeners
+    quantityInput.addEventListener('input', function(e) {
+        handleQuantityInput();
+    });
+    quantityInput.addEventListener('blur', function(e) {
+        handleQuantityBlur();
+    });
 }
 
 function updateQuantityLimits() {
@@ -415,6 +426,51 @@ function validateQuantityInput() {
     } else if (value > maxStock) {
         quantityInput.value = maxStock;
         showToast(`Stock limit is ${maxStock}.`, 'info');
+    }
+}
+
+function handleQuantityInput() {
+    const quantityInput = document.getElementById('quantityInput');
+    if (!quantityInput) return;
+
+    const value = quantityInput.value;
+    
+    // Allow empty field (for backspacing) - do nothing
+    if (value === '') {
+        return;
+    }
+    
+    // Check if input is a valid integer
+    const numValue = parseInt(value, 10);
+    const isFloat = value.includes('.');
+    const hasNonNumeric = /[^0-9]/.test(value);
+    
+    if (hasNonNumeric || isFloat) {
+        // Clear the input and show error message
+        quantityInput.value = '';
+        showToast('Please enter a number only', 'error');
+        return;
+    }
+    
+    // If it's a valid integer, validate the range
+    const maxStock = window.currentProduct ? window.currentProduct.stock : 999;
+    
+    // Only enforce maximum, not minimum during typing
+    if (numValue > maxStock) {
+        quantityInput.value = maxStock;
+        showToast(`Stock limit is ${maxStock}.`, 'info');
+    }
+}
+
+function handleQuantityBlur() {
+    const quantityInput = document.getElementById('quantityInput');
+    if (!quantityInput) return;
+
+    const value = parseInt(quantityInput.value, 10);
+    
+    // If field is empty or invalid, reset to 1
+    if (quantityInput.value === '' || isNaN(value) || value < 1) {
+        quantityInput.value = 1;
     }
 }
 

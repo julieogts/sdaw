@@ -1729,14 +1729,23 @@
 
             // Loading animation functions
             showLoadingStats() {
-                document.getElementById('totalProducts').innerHTML = '<span class="loading-dots">...</span>';
-                document.getElementById('pendingOrders').innerHTML = '<span class="loading-dots">...</span>';
-                document.getElementById('completedOrders').innerHTML = '<span class="loading-dots">...</span>';
-                document.getElementById('deliveredProducts').innerHTML = '<span class="loading-dots">...</span>';
-                // Walk-in orders stat will be implemented with database integration
-                const walkInElement = document.getElementById('walkInOrders');
-                if (walkInElement) walkInElement.innerHTML = '<span class="loading-dots">...</span>';
-                document.getElementById('totalRevenue').innerHTML = '<span class="loading-dots">...</span>';
+                const statsElements = [
+                    'totalProducts', 'pendingOrders', 'completedOrders', 
+                    'deliveredProducts', 'walkInOrders', 'totalRevenue'
+                ];
+                
+                statsElements.forEach(id => {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        element.innerHTML = '<span class="loading-dots">...</span>';
+                        element.classList.add('loading');
+                    }
+                });
+            }
+            
+            hideLoadingStats() {
+                // This function will be called after updateStats() to ensure loading animations are removed
+                // The actual values will be set by updateStats()
             }
             
             showLoadingProducts() {
@@ -1803,12 +1812,196 @@
                 `;
             }
             
+            // Hide loading functions
+            hideLoadingStats() {
+                // INSTANTLY clear all loading states from stats elements
+                const statsElements = [
+                    'totalProducts', 'pendingOrders', 'completedOrders', 
+                    'deliveredProducts', 'walkInOrders', 'totalRevenue'
+                ];
+                
+                statsElements.forEach(id => {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        // Force immediate update - remove any loading classes or content
+                        element.classList.remove('loading', 'loading-dots');
+                        
+                        // If element contains loading dots, replace with actual value
+                        if (element.innerHTML.includes('loading-dots') || element.innerHTML.includes('...')) {
+                            // Get the actual text content (the numbers)
+                            const actualValue = element.textContent || element.innerText || '0';
+                            element.innerHTML = actualValue;
+                        }
+                    }
+                });
+            }
             
+            hideLoadingProducts() {
+                // This function will be called after renderProducts() to ensure loading animations are removed
+                // The actual content will be set by renderProducts()
+            }
+            
+            hideLoadingOrders() {
+                // This function will be called after renderOrders() to ensure loading animations are removed
+                // The actual content will be set by renderOrders()
+            }
+            
+            hideLoadingReturns() {
+                // This function will be called after renderReturns() to ensure loading animations are removed
+                // The actual content will be set by renderReturns()
+            }
+            
+            hideLoadingRecentActivity() {
+                const activityList = document.getElementById('activityList');
+                if (activityList) {
+                    // INSTANTLY remove loading state
+                    activityList.classList.remove('loading');
+                    
+                    // Force immediate content update
+                    if (activityList.innerHTML.includes('loading-spinner') || activityList.innerHTML.includes('Loading')) {
+                        // Clear loading content immediately
+                        activityList.innerHTML = '';
+                        
+                        // If no data, show placeholder immediately
+                        if (!this.orders || this.orders.length === 0) {
+                            activityList.innerHTML = '<div class="no-data">No recent activity</div>';
+                        }
+                    }
+                }
+            }
+            
+            hideLoadingLowStockAlerts() {
+                const lowStockList = document.getElementById('lowStockList');
+                if (lowStockList) {
+                    // INSTANTLY remove loading state
+                    lowStockList.classList.remove('loading');
+                    
+                    // Force immediate content update
+                    if (lowStockList.innerHTML.includes('loading-spinner') || lowStockList.innerHTML.includes('Loading')) {
+                        // Clear loading content immediately
+                        lowStockList.innerHTML = '';
+                        
+                        // If no data, show placeholder immediately
+                        if (!this.products || this.products.length === 0) {
+                            lowStockList.innerHTML = '<div class="no-data">No low stock alerts</div>';
+                        }
+                    }
+                }
+            }
+
+            // ULTRA-FAST dashboard loading with aggressive optimizations
+            async loadDashboardData() {
+                try {
+                    // PHASE 1: Try to use cached data first (INSTANT)
+                    if (this._cache.products && this._cache.orders && this._cache.products.length > 0 && this._cache.orders.length >= 0) {
+                        this.products = this._cache.products;
+                        this.orders = this._cache.orders;
+                        this.calculateStatsFromLoadedData();
+                        this.updateStats();
+                        this.renderDashboard();
+                        
+                        // Update cache in background (non-blocking)
+                        setTimeout(() => {
+                            this.loadProducts().catch(() => {});
+                            this.loadOrders().catch(() => {});
+                        }, 1000);
+                        return;
+                    }
+                    
+                    // PHASE 2: Load data with longer timeout to ensure it completes
+                    console.log('🔄 Loading fresh data...');
+                    const [productsResult, ordersResult] = await Promise.allSettled([
+                        this.loadProducts(),
+                        this.loadOrders()
+                    ]);
+                    
+                    // Check if data was actually loaded
+                    if (productsResult.status === 'fulfilled' && ordersResult.status === 'fulfilled') {
+                        console.log('✅ Data loaded successfully');
+                        this.calculateStatsFromLoadedData();
+                        this.updateStats();
+                        this.renderDashboard();
+                    } else {
+                        console.log('⚠️ Some data failed to load, using fallback');
+                        this.showFallbackData();
+                    }
+                    
+                    // PHASE 3: Background loading (completely non-blocking)
+                    setTimeout(() => {
+                        this.loadReturns().catch(() => {}); // Silent fail
+                        this.loadComprehensiveStats().catch(() => {}); // Silent fail
+                    }, 100);
+                    
+                } catch (error) {
+                    console.error('Error loading dashboard data:', error);
+                    // Show fallback data immediately
+                    this.showFallbackData();
+                }
+            }
+
+            // Show fallback data when loading fails or is slow
+            showFallbackData() {
+                console.log('🔄 Showing fallback data...');
+                
+                // Use cached data if available
+                if (this._cache.products) this.products = this._cache.products;
+                if (this._cache.orders) this.orders = this._cache.orders;
+                if (this._cache.stats) this.comprehensiveStats = this._cache.stats;
+                
+                // Ensure we have some data to show
+                this.products = this.products || [];
+                this.orders = this.orders || [];
+                this.comprehensiveStats = this.comprehensiveStats || {
+                    totalPending: 0,
+                    totalAccepted: 0,
+                    totalDelivered: 0,
+                    totalRevenue: 0
+                };
+                
+                console.log('📊 Fallback data:', {
+                    products: this.products.length,
+                    orders: this.orders.length,
+                    stats: this.comprehensiveStats
+                });
+                
+                // Update visuals immediately
+                this.updateStats();
+                this.renderDashboard();
+                
+                // Try to load fresh data in background
+                setTimeout(() => {
+                    console.log('🔄 Attempting background data refresh...');
+                    this.loadProducts().then(() => {
+                        console.log('✅ Products refreshed');
+                        this.updateStats();
+                    }).catch(() => {});
+                    this.loadOrders().then(() => {
+                        console.log('✅ Orders refreshed');
+                        this.updateStats();
+                    }).catch(() => {});
+                }, 2000);
+            }
+
+            // Cache invalidation method
+            invalidateCache() {
+                this._cache = { products: null, orders: null, returns: null, stats: null };
+            }
+
+            // Check if cache is stale (older than 2 minutes for faster updates)
+            isCacheStale() {
+                if (!this._cache.timestamp) return true;
+                return Date.now() - this._cache.timestamp > 120000; // 2 minutes
+            }
 
             async loadData() {
                 // Initialize simple in-memory cache if needed
                 if (!this._cache) {
-                    this._cache = { products: null, orders: null, returns: null, stats: null };
+                    this._cache = { products: null, orders: null, returns: null, stats: null, timestamp: null };
+                }
+
+                // Invalidate cache if stale
+                if (this.isCacheStale()) {
+                    this.invalidateCache();
                 }
 
                 // Show loading animations for visible areas
@@ -1821,6 +2014,13 @@
                 if (this.currentSection === 'dashboard') {
                     this.showLoadingRecentActivity();
                     this.showLoadingLowStockAlerts();
+                }
+                
+                // For dashboard, prioritize immediate rendering
+                if (this.currentSection === 'dashboard') {
+                    // Load core data in parallel and render immediately
+                    this.loadDashboardData();
+                    return;
                 }
 
                 // Load the current section's data first (fast first paint),
@@ -1856,16 +2056,8 @@
                         ]).then(() => { this.updateStats(); });
                         return;
                     }
-                    // Dashboard needs products + orders + stats primarily
-                    await Promise.all([
-                        this.loadProducts(),
-                        this.loadOrders(),
-                        this.loadComprehensiveStats()
-                    ]);
-                    this.renderCurrentSection();
-                    Promise.allSettled([
-                        this.loadReturns()
-                    ]).then(() => { this.updateStats(); });
+                    // Dashboard loading is now handled by loadDashboardData() above
+                    // This section is for other pages only
                 } catch (e) {
                     console.error('Error loading initial data:', e);
                     showToast('Failed to load some data. Please try again.', 'error');
@@ -1905,21 +2097,55 @@
             // Load comprehensive statistics from all collections
             async loadComprehensiveStats() {
                 try {
-                    // We'll use a dummy user ID to get overall statistics
-                    // In a real system, you might want a dedicated staff statistics endpoint
-                    const response = await fetch('http://localhost:3000/api/orders/stats/staff-overview');
-                    
-                    if (response.ok) {
-                        this.comprehensiveStats = await response.json();
-                    } else {
-                        // Fallback: fetch from all collections manually
-                        console.log('📊 Staff Dashboard - Fetching comprehensive stats manually...');
-                        await this.loadStatsFromAllCollections();
+                    // Use cached stats if available
+                    if (this._cache.stats && this._cache.stats.timestamp && !this.isCacheStale()) {
+                        this.comprehensiveStats = this._cache.stats;
+                        return;
                     }
+
+                    // Skip API call entirely - calculate from loaded orders for speed
+                    this.calculateStatsFromLoadedData();
                 } catch (error) {
                     console.error('Error loading comprehensive stats:', error);
-                    await this.loadStatsFromAllCollections();
+                    this.calculateStatsFromLoadedData();
                 }
+            }
+
+            // Optimized method to calculate stats from already loaded data
+            calculateStatsFromLoadedData() {
+                if (!this.orders || this.orders.length === 0) {
+                    this.comprehensiveStats = {
+                        totalPending: 0,
+                        totalAccepted: 0,
+                        totalDelivered: 0,
+                        totalRevenue: 0
+                    };
+                    return;
+                }
+
+                // Use efficient single-pass filtering
+                const stats = this.orders.reduce((acc, order) => {
+                    const collection = order.collection;
+                    const total = parseFloat(order.total) || 0;
+                    
+                    if (collection === 'pending') acc.totalPending++;
+                    else if (collection === 'accepted') {
+                        acc.totalAccepted++;
+                        acc.totalRevenue += total;
+                    }
+                    else if (collection === 'delivered') {
+                        acc.totalDelivered++;
+                        acc.totalRevenue += total;
+                    }
+                    
+                    return acc;
+                }, { totalPending: 0, totalAccepted: 0, totalDelivered: 0, totalRevenue: 0 });
+
+                this.comprehensiveStats = stats;
+                this._cache.stats = {
+                    ...stats,
+                    timestamp: Date.now()
+                };
             }
 
             // Fallback method to manually fetch stats from all collections
@@ -1967,7 +2193,15 @@
 
             async loadProducts() {
                 try {
+                    // Use cached products if available
+                    if (this._cache.products && this._cache.products.length > 0) {
+                        this.products = this._cache.products;
+                        return;
+                    }
+
+                    console.log('🔄 Loading products...');
                     const response = await fetch('http://localhost:3000/api/products');
+                    
                     if (!response.ok) throw new Error('Failed to fetch products');
 
                     let products = await response.json();
@@ -1993,11 +2227,9 @@
                         description: product.description || 'No description available.'
                     }));
 
-                    // Debug: Log category distribution
-                    console.log('📊 Product category distribution:', this.products.reduce((acc, p) => {
-                        acc[p.category] = (acc[p.category] || 0) + 1;
-                        return acc;
-                    }, {}));
+                    // Cache the processed products
+                    this._cache.products = this.products;
+                    this._cache.timestamp = Date.now();
                 } catch (error) {
                     console.error('Error loading products:', error);
                     this.products = [];
@@ -2006,28 +2238,23 @@
 
             async loadOrders() {
                 try {
+                    // Use cached orders if available
+                    if (this._cache.orders && this._cache.orders.length >= 0) {
+                        this.orders = this._cache.orders;
+                        return;
+                    }
+
+                    console.log('🔄 Loading orders...');
                     // Fetch orders from all collections (pending, accepted, delivered)
                     const response = await fetch('http://localhost:3000/api/orders/all-staff');
+                    
                     if (!response.ok) throw new Error('Failed to fetch orders');
 
                     this.orders = await response.json();
-                    console.log('📊 Staff Dashboard - Loaded orders from all collections:', this.orders.length);
-                    console.log('📋 Orders breakdown:', {
-                        pending: this.orders.filter(o => o.collection === 'pending').length,
-                        accepted: this.orders.filter(o => o.collection === 'accepted').length,
-                        delivered: this.orders.filter(o => o.collection === 'delivered').length,
-                        returned: this.orders.filter(o => o.collection === 'returned').length,
-                        walkin: this.orders.filter(o => o.collection === 'walkin').length
-                    });
-
-                    // Debug: Log first few orders to see their structure
-                    console.log('🔍 Sample orders:', this.orders.slice(0, 3).map(o => ({
-                        id: o._id?.slice(-6),
-                        collection: o.collection,
-                        status: o.status,
-                        displayStatus: o.displayStatus,
-                        orderNumber: o.orderNumber
-                    })));
+                    
+                    // Cache the orders
+                    this._cache.orders = this.orders;
+                    this._cache.timestamp = Date.now();
 
                     this.checkForNewOrders();
                 } catch (error) {
@@ -2038,12 +2265,20 @@
 
             async loadReturns() {
                 try {
+                    // Use cached returns if available
+                    if (this._cache.returns && this._cache.returns.length >= 0) {
+                        this.returns = this._cache.returns;
+                        return;
+                    }
+
                     // Fetch returned orders from the returned collection
                     const response = await fetch('http://localhost:3000/api/orders/returns');
                     if (!response.ok) throw new Error('Failed to fetch returns');
 
                     this.returns = await response.json();
-                    console.log('📦 Staff Dashboard - Loaded returns:', this.returns.length);
+                    
+                    // Cache the returns
+                    this._cache.returns = this.returns;
 
                     // Update returns badge
                     const returnsBadge = document.getElementById('returnsBadge');
@@ -2337,6 +2572,9 @@
                 
                 // Note: Walk-in orders will be loaded from database in future update
                 // Removed problematic references to non-existent HTML elements
+                
+                // Hide loading animations after stats are updated
+                this.hideLoadingStats();
             }
 
             initializeEventListeners() {
@@ -2747,8 +2985,11 @@
             }
 
             renderDashboard() {
+                // INSTANTLY hide loading states and render content
+                this.hideLoadingRecentActivity();
+                this.hideLoadingLowStockAlerts();
+                
                 // Render recent activity and low stock alerts
-                // Loading is already shown during loadData() if this is the initial load
                 this.renderRecentActivity();
                 this.renderLowStockAlerts();
             }
@@ -2888,6 +3129,9 @@
                 `).join('');
 
                 this.updatePagination('productsPagination', filteredProducts.length);
+                
+                // Hide loading animations after products are rendered
+                this.hideLoadingProducts();
             }
 
             renderOrders() {
@@ -3068,6 +3312,9 @@
                     </tr>
                 `).join('');
                 */
+                
+                // Hide loading animations after orders are rendered
+                this.hideLoadingOrders();
             }
 
             renderReturns() {
