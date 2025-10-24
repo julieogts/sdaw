@@ -8,7 +8,18 @@
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/header.css">
     <link rel="stylesheet" href="css/footer.css">
+    <link rel="stylesheet" href="css/modal.css">
+    <link rel="stylesheet" href="css/forms.css">
+    <link rel="stylesheet" href="css/verification-dialog.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="js/simple-auth-client.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/validation.js"></script>
+    <script src="focus-create-account.js"></script>
+    <script src="js/loginButton.js"></script>
+    <script src="js/login.js"></script>
+    <script src="js/toast.js"></script>
     <style>
         /* Page specific styles */
         .policy-container {
@@ -318,6 +329,182 @@
         </div>
     </main>
 
+    <!-- Login Modal -->
+    <div class="modal" id="loginModal">
+        <div class="modal-content">
+            <button class="modal-close" id="modalClose">×</button>
+            <h2 class="modal-title">Welcome Back</h2>
+
+            <!-- Login Mode Tabs -->
+            <div class="tab-buttons" id="loginTabs">
+                <button class="tab-btn active" data-tab="user-login">User Login</button>
+                <button class="tab-btn" data-tab="staff-login">Staff Login</button>
+            </div>
+
+            <div class="tab-container">
+
+                <!-- User Login Tab -->
+                <div class="tab-content active" id="user-login">
+                    <div class="form-group">
+                        <label for="user-email">Email Address</label>
+                        <input type="email" id="user-email" class="form-control" placeholder="Enter your email address">
+                    </div>
+                    <div class="form-group">
+                        <label for="user-password">Password</label>
+                        <input type="password" id="user-password" class="form-control" placeholder="Enter your password">
+                    </div>
+                    <button class="btn" id="userLoginSubmitBtn">Sign In</button>
+
+                    <div class="signup-prompt" style="text-align: center; margin: 16px 0;">
+                        <span style="color: #7f8c8d; font-size: 14px;">Don't have an account? </span>
+                        <button type="button" class="signup-link" onclick="showRegistrationModal()" style="background: none; border: none; color: #3498db; font-size: 14px; font-weight: 600; cursor: pointer; padding: 0; text-decoration: underline;">Create one today</button>
+                    </div>
+
+                    <div class="login-separator">
+                        <div></div>
+                        <span>or continue with</span>
+                        <div></div>
+                    </div>
+
+                    <div class="google-signin-container">
+                        <div id="g_id_onload"
+                             data-client_id="856316440062-00drlhn0s99moqu4a0ktbvgrk0l4mda2.apps.googleusercontent.com"
+                             data-callback="handleGoogleSignIn"
+                             data-auto_prompt="false">
+                        </div>
+                        <div class="g_id_signin"
+                             data-type="standard"
+                             data-size="large"
+                             data-theme="outline"
+                             data-text="sign_in_with"
+                             data-shape="rectangular"
+                             data-logo_alignment="left"
+                             title="Sign in/Sign up using a Google account">
+                        </div>
+                    </div>
+
+                    <div class="forgot-password-prompt" style="text-align: center; margin: 16px 0 0 0;">
+                        <span style="color: #7f8c8d; font-size: 14px;">Forgot your password? </span>
+                        <button type="button" class="forgot-password-link" onclick="showRegistrationModal('forgot-password')" style="background: none; border: none; color: #3498db; font-size: 14px; font-weight: 600; cursor: pointer; padding: 0; text-decoration: underline;">Retrieve it today</button>
+                    </div>
+                </div>
+
+                <!-- Staff Login Tab -->
+                <div class="tab-content" id="staff-login">
+                    <div class="form-group">
+                        <label for="staff-id">Staff Username</label>
+                        <input type="text" id="staff-id" class="form-control" placeholder="Enter your staff username">
+                    </div>
+                    <div class="form-group">
+                        <label for="staff-password">Password</label>
+                        <input type="password" id="staff-password" class="form-control" placeholder="Enter your password">
+                    </div>
+                    <button class="btn" id="staffLoginSubmitBtn">Staff Sign In</button>
+
+                    <div class="staff-login-note" style="text-align: center; margin-top: 16px; color: #7f8c8d; font-size: 14px;">
+                        Staff credentials only. No social login available.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Registration Modal -->
+    <div class="modal" id="registrationModal">
+        <div class="modal-content">
+            <button class="modal-close" id="registrationModalClose">×</button>
+            <h2 class="modal-title">Create Account</h2>
+
+            <!-- Registration Mode Tabs -->
+            <div class="tab-buttons" id="registrationTabs">
+                <button class="tab-btn active" data-tab="user-signup">Register</button>
+                <button class="tab-btn" data-tab="forgot-password">Account Recovery</button>
+            </div>
+
+            <div class="tab-container">
+
+                <!-- User Signup Tab -->
+                <div class="tab-content active" id="user-signup">
+                    <div class="form-group">
+                        <label for="signup-fullname">Full Name</label>
+                        <input type="text" id="signup-fullname" class="form-control" placeholder="Enter your full name">
+                        <div class="error-message"></div>
+                        <div class="success-message"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="signup-email">Email Address</label>
+                        <input type="email" id="signup-email" class="form-control" placeholder="Enter your email address">
+                        <div class="error-message"></div>
+                        <div class="success-message"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="signup-password">Password</label>
+                        <input type="password" id="signup-password" class="form-control" placeholder="Create a strong password">
+                        <div class="password-strength">
+                            <div class="strength-bar">
+                                <div class="strength-fill"></div>
+                            </div>
+                            <div class="strength-text"></div>
+                        </div>
+                        <div class="error-message"></div>
+                        <div class="success-message"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="signup-confirm-password">Confirm Password</label>
+                        <input type="password" id="signup-confirm-password" class="form-control" placeholder="Confirm your password">
+                        <div class="error-message"></div>
+                        <div class="success-message"></div>
+                    </div>
+                    <button class="btn" id="userSignupSubmitBtn">Create My Account</button>
+
+                    <div class="signup-prompt" style="text-align: center; margin: 16px 0;">
+                        <span style="color: #7f8c8d; font-size: 14px;">Already have an account? </span>
+                        <button type="button" class="login-link" onclick="showLoginModal()" style="background: none; border: none; color: #3498db; font-size: 14px; font-weight: 600; cursor: pointer; padding: 0; text-decoration: underline;">Sign in here</button>
+                    </div>
+
+                    <div class="login-separator">
+                        <div></div>
+                        <span>or continue with</span>
+                        <div></div>
+                    </div>
+
+                    <div class="google-signin-container">
+                        <div id="g_id_onload"
+                             data-client_id="856316440062-00drlhn0s99moqu4a0ktbvgrk0l4mda2.apps.googleusercontent.com"
+                             data-callback="handleGoogleSignIn"
+                             data-auto_prompt="false">
+                        </div>
+                        <div class="g_id_signin"
+                             data-type="standard"
+                             data-size="large"
+                             data-theme="outline"
+                             data-text="sign_up_with"
+                             data-shape="rectangular"
+                             data-logo_alignment="left"
+                             title="Sign up using a Google account">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Forgot Password Tab -->
+                <div class="tab-content" id="forgot-password">
+                    <div class="form-group">
+                        <label for="forgot-email">Email Address</label>
+                        <input type="email" id="forgot-email" class="form-control" placeholder="Enter your email address">
+                        <div class="error-message"></div>
+                        <div class="success-message"></div>
+                    </div>
+                    <button class="btn" id="forgotPasswordSubmitBtn">Send Recovery Email</button>
+
+                    <div class="signup-prompt" style="text-align: center; margin: 16px 0;">
+                        <span style="color: #7f8c8d; font-size: 14px;">Remember your password? </span>
+                        <button type="button" class="login-link" onclick="showLoginModal()" style="background: none; border: none; color: #3498db; font-size: 14px; font-weight: 600; cursor: pointer; padding: 0; text-decoration: underline;">Sign in here</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Footer -->
     <footer>
         <div class="container">
@@ -466,6 +653,83 @@
                 behavior: 'smooth'
             });
         });
+    </script>
+
+    <!-- Check if logged in as staff and redirect if needed -->
+    <script>
+        if (Auth.redirectIfStaff()) {
+            // Stop further execution if redirecting
+            throw new Error('Redirecting to staff dashboard');
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                // Try to redirect staff again (in case auth state changes)
+                if (Auth.redirectIfStaff()) return;
+
+                // Update cart count
+                Auth.updateCartCount();
+
+                // Update login/signup buttons based on auth state
+                const currentUser = Auth.getCurrentUser();
+                if (currentUser) {
+                    // User is logged in - hide login/signup, show user info
+                    const topLoginBtn = document.getElementById('topLoginBtn');
+                    const topSignUpBtn = document.getElementById('topSignUpBtn');
+                    if (topLoginBtn) {
+                        topLoginBtn.textContent = currentUser.fullName || 'My Account';
+                        topLoginBtn.href = currentUser.isStaff ? 'staff-dashboard.html' : 'profile.html';
+                    }
+                    if (topSignUpBtn) {
+                        topSignUpBtn.textContent = 'Logout';
+                        topSignUpBtn.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            Auth.logout();
+                            window.location.reload();
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error('Error during initial load:', error);
+            }
+        });
+
+        // Cart button redirect to login if not logged in
+        document.getElementById('cartBtn').addEventListener('click', (e) => {
+            e.preventDefault(); // Prevent default link navigation
+            if (!Auth.isLoggedIn()) {
+                showToast('Please log in to view your cart.');
+                window.showLoginModal();
+            } else {
+                // If logged in, navigate to cart page
+                window.location.href = 'cart.html';
+            }
+        });
+
+        // Add Google Sign-In handler function
+        function handleGoogleSignIn(response) {
+            console.log('Google Sign-In Response:', response);
+            const idToken = response.credential;
+            if (!idToken) {
+                console.error('No idToken received');
+                showToast('Google Sign-In failed: No token received');
+                return;
+            }
+            // Try login first
+            let result = Auth.googleLogin(idToken);
+            console.log('Login Result:', result);
+            if (!result.success && result.message.includes("not registered")) {
+                // If login fails due to user not existing, attempt registration
+                result = Auth.googleRegister(idToken);
+                console.log('Registration Result:', result);
+            }
+            showToast(result.message);
+            if (result.success) {
+                document.getElementById('loginModal').classList.remove('show');
+                window.location.reload(); // Reload to update header
+            }
+        }
     </script>
 </body>
 </html>

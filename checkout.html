@@ -1019,23 +1019,23 @@
                         selectedPercent = parseFloat(customInput.value);
                     }
                 }
-                
+
                 if (selectedPercent > 0) {
                     const payNowAmount = (total * selectedPercent) / 100;
                     const balanceAmount = total - payNowAmount;
                     const balancePercent = 100 - selectedPercent;
                     
-                    document.getElementById('split-pay-now').textContent = `₱${payNowAmount.toFixed(2)}`;
+                    document.getElementById('split-pay-now').textContent = `₱${payNowAmount.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
                     document.getElementById('split-pay-now-percent').textContent = `${selectedPercent}%`;
-                    document.getElementById('split-balance-delivery').textContent = `₱${balanceAmount.toFixed(2)}`;
+                    document.getElementById('split-balance-delivery').textContent = `₱${balanceAmount.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
                     document.getElementById('split-balance-percent').textContent = `${balancePercent}%`;
                 } else {
                     document.getElementById('split-pay-now').textContent = '₱0.00';
                     document.getElementById('split-pay-now-percent').textContent = '0%';
-                    document.getElementById('split-balance-delivery').textContent = `₱${total.toFixed(2)}`;
+                    document.getElementById('split-balance-delivery').textContent = `₱${total.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
                     document.getElementById('split-balance-percent').textContent = '100%';
                 }
-                
+
                 // Update order summary
                 updateOrderSummaryTotals();
             }
@@ -1071,20 +1071,20 @@
                         // Show split delivery row and calculate amounts
                         splitDeliveryRow.style.display = 'block';
                         const balanceAmount = fullTotal - ((fullTotal * selectedPercent) / 100);
-                        document.getElementById('splitDeliveryAmount').textContent = `₱${balanceAmount.toFixed(2)}`;
+                        document.getElementById('splitDeliveryAmount').textContent = `₱${balanceAmount.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
                         
                         // Update total to show only the amount being paid now
                         const payNowAmount = (fullTotal * selectedPercent) / 100;
-                        document.getElementById('total').textContent = `₱${payNowAmount.toFixed(2)}`;
+                        document.getElementById('total').textContent = `₱${payNowAmount.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
                     } else {
                         // If no percentage selected yet, show full total and hide split delivery row
                         splitDeliveryRow.style.display = 'none';
-                        document.getElementById('total').textContent = `₱${fullTotal.toFixed(2)}`;
+                        document.getElementById('total').textContent = `₱${fullTotal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
                     }
                 } else {
                     // Hide split delivery row and show full total
                     splitDeliveryRow.style.display = 'none';
-                    document.getElementById('total').textContent = `₱${fullTotal.toFixed(2)}`;
+                    document.getElementById('total').textContent = `₱${fullTotal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
                 }
             }
             

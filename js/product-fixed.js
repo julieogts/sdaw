@@ -1,10 +1,7 @@
 // Product.js - Database-driven product loading
 
 function formatPHPPrice(price) {
-    return new Intl.NumberFormat('en-PH', {
-        style: 'currency',
-        currency: 'PHP'
-    }).format(price);
+    return '₱' + price.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
 }
 
 // Load product from database based on URL parameter
@@ -51,7 +48,7 @@ async function loadProductDetails() {
                 breadcrumbProductName.textContent = product.name;
             }
             
-            document.getElementById('productPrice').textContent = '₱' + price.toFixed(2);
+            document.getElementById('productPrice').textContent = price.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
             
 
             
