@@ -2372,9 +2372,9 @@
                         return;
                     }
 
-                    // Fetch returned orders from the returned collection
-                    const response = await fetch('http://localhost:3000/api/orders/returns');
-                    if (!response.ok) throw new Error('Failed to fetch returns');
+                    // Fetch return requests for staff review
+                    const response = await fetch('http://localhost:3000/api/orders/return-requests');
+                    if (!response.ok) throw new Error('Failed to fetch return requests');
 
                     this.returns = await response.json();
                     
@@ -3380,7 +3380,7 @@
                             <td>${order.orderNumber || this.generateOrderNumber(order)}</td>
                             <td>${order.fullName || order.buyerinfo || 'N/A'}</td>
                             <td>${(order.itemsordered || []).length} items</td>
-                            <td>₱${order.total.toFixed(2)}</td>
+                            <td>₱${formatPrice(order.total)}</td>
                             <td>
                                 <span class="payment-method ${order.paymentMethod || 'cod'}">
                                     ${this.formatPaymentMethod(order.paymentMethod || 'cod')}

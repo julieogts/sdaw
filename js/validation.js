@@ -4,17 +4,23 @@
 class FormValidator {
     constructor() {
         this.rules = {
-            fullName: {
-                minLength: 2,
-                maxLength: 50,
-                pattern: /^[a-zA-Z\s]{2,50}$/,
+            // Text - Letters and spaces only
+            text: {
+                pattern: /^[a-zA-Z\s]+$/,
                 errorMessages: {
-                    empty: 'Full name is required',
-                    minLength: 'Full name must be at least 2 characters',
-                    maxLength: 'Full name must be less than 50 characters',
-                    pattern: 'Full name can only contain letters and spaces'
+                    pattern: 'This field can only contain letters and spaces'
                 }
             },
+
+            // Phone - Philippine format (09xxxxxxxxx or +639xxxxxxxxx)
+            phone: {
+                pattern: /^(09\d{9}|\+639\d{9})$/,
+                errorMessages: {
+                    pattern: 'Please enter a valid Philippine phone number (09xxxxxxxxx or +639xxxxxxxxx)'
+                }
+            },
+
+            // Email
             email: {
                 minLength: 5,
                 maxLength: 100,
@@ -26,6 +32,50 @@ class FormValidator {
                     pattern: 'Please enter a valid email address'
                 }
             },
+
+            // Integer - Whole numbers only, no decimals
+            integer: {
+                pattern: /^-?\d+$/,
+                errorMessages: {
+                    pattern: 'This field must contain only whole numbers'
+                }
+            },
+
+            // Decimal/Price - Allows decimals (e.g., 99.99)
+            decimal: {
+                pattern: /^-?\d+(\.\d+)?$/,
+                validate: (value) => {
+                    const num = parseFloat(value);
+                    return !isNaN(num) && num >= 0;
+                },
+                errorMessages: {
+                    pattern: 'Please enter a valid number (e.g., 99.99)',
+                    validate: 'Please enter a valid positive number'
+                }
+            },
+
+            // Quantity - Positive integer for amounts
+            quantity: {
+                pattern: /^[1-9]\d*$/,
+                errorMessages: {
+                    pattern: 'Quantity must be a positive whole number'
+                }
+            },
+
+            // Full Name - Letters and spaces only
+            fullName: {
+                minLength: 2,
+                maxLength: 50,
+                pattern: /^[a-zA-Z\s]{2,50}$/,
+                errorMessages: {
+                    empty: 'Full name is required',
+                    minLength: 'Full name must be at least 2 characters',
+                    maxLength: 'Full name must be less than 50 characters',
+                    pattern: 'Full name can only contain letters and spaces'
+                }
+            },
+
+            // Password
             password: {
                 minLength: 6,
                 maxLength: 60,
@@ -39,6 +89,29 @@ class FormValidator {
                     empty: 'Password is required',
                     minLength: 'Password must be at least 6 characters',
                     maxLength: 'Password must be less than 60 characters'
+                }
+            },
+
+            // Textarea - Minimum character requirement
+            textarea: {
+                minLength: 10,
+                maxLength: 1000,
+                validate: (value) => {
+                    const trimmed = value.trim();
+                    return trimmed.length >= 10;
+                },
+                errorMessages: {
+                    empty: 'This field is required',
+                    minLength: 'Please provide at least 10 characters',
+                    maxLength: 'Text is too long (maximum 1000 characters)',
+                    validate: 'Please provide meaningful content'
+                }
+            },
+
+            // Required field (generic)
+            required: {
+                errorMessages: {
+                    empty: 'This field is required'
                 }
             }
         };
@@ -61,6 +134,9 @@ class FormValidator {
         this.setupSignupValidation();
         this.setupStaffValidation();
         this.setupUserLoginValidation();
+        this.setupStaffFormValidation();
+        this.setupCheckoutValidation();
+        this.setupProfileValidation();
     }
 
     // Validate individual field based on rules
@@ -68,12 +144,16 @@ class FormValidator {
         const rule = this.rules[fieldName];
         if (!rule) return { isValid: true };
 
-        // Check if empty
+        // Check if empty (skip for non-required fields)
         if (!value || value.trim().length === 0) {
-            return {
-                isValid: false,
-                message: rule.errorMessages.empty
-            };
+            // Only return error if field is required
+            if (rule.errorMessages && rule.errorMessages.empty) {
+                return {
+                    isValid: false,
+                    message: rule.errorMessages.empty
+                };
+            }
+            return { isValid: true }; // Non-required empty field is valid
         }
 
         const trimmedValue = value.trim();
@@ -86,7 +166,7 @@ class FormValidator {
             };
         }
 
-        // Check maximum length  
+        // Check maximum length
         if (rule.maxLength && trimmedValue.length > rule.maxLength) {
             return {
                 isValid: false,
@@ -102,7 +182,226 @@ class FormValidator {
             };
         }
 
+        // Check custom validation function
+        if (rule.validate && typeof rule.validate === 'function') {
+            if (!rule.validate(trimmedValue)) {
+                return {
+                    isValid: false,
+                    message: rule.errorMessages.validate || 'Validation failed'
+                };
+            }
+        }
+
         return { isValid: true };
+    }
+
+    // Validate date field (cannot be in the past)
+    validateDate(value) {
+        if (!value) {
+            return {
+                isValid: false,
+                message: 'Date is required'
+            };
+        }
+
+        const selectedDate = new Date(value);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // Reset time to start of day
+
+        if (selectedDate < today) {
+            return {
+                isValid: false,
+                message: 'Date cannot be in the past'
+            };
+        }
+
+        return { isValid: true };
+    }
+
+    // Validate select/dropdown field (required selection)
+    validateSelect(value) {
+        if (!value || value === '' || value === 'default' || value === 'select') {
+            return {
+                isValid: false,
+                message: 'Please select an option'
+            };
+        }
+
+        return { isValid: true };
+    }
+
+    // Validate by field type
+    validateByType(type, value, options = {}) {
+        switch (type.toLowerCase()) {
+            case 'text':
+                return this.validateField('text', value);
+            case 'email':
+                return this.validateField('email', value);
+            case 'phone':
+                return this.validateField('phone', value);
+            case 'integer':
+                return this.validateField('integer', value);
+            case 'decimal':
+            case 'price':
+                return this.validateField('decimal', value);
+            case 'quantity':
+                return this.validateField('quantity', value);
+            case 'textarea':
+                return this.validateField('textarea', value);
+            case 'date':
+                return this.validateDate(value);
+            case 'select':
+                return this.validateSelect(value);
+            case 'required':
+                return this.validateField('required', value);
+            default:
+                return this.validateField(type, value);
+        }
+    }
+
+    // Add real-time validation to an input field
+    addFieldValidation(inputElement, type, options = {}) {
+        if (!inputElement) return;
+
+        const fieldId = inputElement.id;
+        const fieldName = fieldId.replace(/^(signup-|staff-)/, '');
+
+        // Real-time validation on input
+        inputElement.addEventListener('input', (e) => {
+            const value = e.target.value;
+            const validation = this.validateByType(type, value, options);
+
+            if (value.length === 0) {
+                this.clearValidation(fieldName);
+            } else if (validation.isValid) {
+                this.showSuccess(fieldName, options.successMessage || `✓ Valid ${type}`);
+            } else {
+                this.showError(fieldName, validation.message);
+            }
+        });
+
+        // Final validation on blur
+        inputElement.addEventListener('blur', (e) => {
+            const value = e.target.value;
+            const validation = this.validateByType(type, value, options);
+
+            if (!validation.isValid) {
+                this.showError(fieldName, validation.message);
+            }
+        });
+
+        // Special handling for select elements
+        if (inputElement.tagName.toLowerCase() === 'select') {
+            inputElement.addEventListener('change', (e) => {
+                const value = e.target.value;
+                const validation = this.validateByType(type, value, options);
+
+                if (validation.isValid) {
+                    this.showSuccess(fieldName, options.successMessage || '✓ Selected');
+                } else {
+                    this.showError(fieldName, validation.message);
+                }
+            });
+
+            // Initial validation
+            if (inputElement.value) {
+                const validation = this.validateByType(type, inputElement.value, options);
+                if (!validation.isValid) {
+                    this.showError(fieldName, validation.message);
+                }
+            }
+        }
+    }
+
+    // Setup validation for staff dashboard forms
+    setupStaffFormValidation() {
+        // Walk-in Order Modal
+        const customerNameInput = document.getElementById('walkInCustomerName');
+        const customerPhoneInput = document.getElementById('walkInCustomerPhone');
+        const customerNotesInput = document.getElementById('walkInNotes');
+        const deliveryAddressInput = document.getElementById('walkInDeliveryAddress');
+
+        this.addFieldValidation(customerNameInput, 'text', {
+            successMessage: '✓ Valid customer name'
+        });
+
+        this.addFieldValidation(customerPhoneInput, 'phone', {
+            successMessage: '✓ Valid Philippine number'
+        });
+
+        if (customerNotesInput) {
+            this.addFieldValidation(customerNotesInput, 'textarea', {
+                successMessage: '✓ Notes added'
+            });
+        }
+
+        if (deliveryAddressInput) {
+            this.addFieldValidation(deliveryAddressInput, 'required', {
+                successMessage: '✓ Delivery address provided'
+            });
+        }
+
+        // New Transaction Modal
+        const newCustomerNameInput = document.getElementById('newTransactionCustomerName');
+        this.addFieldValidation(newCustomerNameInput, 'text', {
+            successMessage: '✓ Valid name'
+        });
+
+        // Product Edit Modal
+        const productStockInput = document.getElementById('productStock');
+        this.addFieldValidation(productStockInput, 'integer', {
+            successMessage: '✓ Valid stock quantity'
+        });
+
+        // Order Denial Reason
+        const denialReasonInput = document.getElementById('denialReason');
+        if (denialReasonInput) {
+            this.addFieldValidation(denialReasonInput, 'textarea', {
+                successMessage: '✓ Denial reason provided'
+            });
+        }
+
+        // Return Reason
+        const returnReasonInput = document.getElementById('returnReason');
+        if (returnReasonInput) {
+            this.addFieldValidation(returnReasonInput, 'textarea', {
+                successMessage: '✓ Return reason provided'
+            });
+        }
+
+        // Order Type Select
+        const orderTypeSelect = document.getElementById('walkInOrderType');
+        this.addFieldValidation(orderTypeSelect, 'select', {
+            successMessage: '✓ Order type selected'
+        });
+
+        // Date filters (dashboard and orders)
+        const dashboardStartDate = document.getElementById('dashboardStartDate');
+        const dashboardEndDate = document.getElementById('dashboardEndDate');
+        const orderStartDate = document.getElementById('orderStartDate');
+        const orderEndDate = document.getElementById('orderEndDate');
+
+        // Add date validation to dashboard dates
+        if (dashboardStartDate) this.addFieldValidation(dashboardStartDate, 'date', { successMessage: '✓ Valid start date' });
+        if (dashboardEndDate) this.addFieldValidation(dashboardEndDate, 'date', { successMessage: '✓ Valid end date' });
+        if (orderStartDate) this.addFieldValidation(orderStartDate, 'date', { successMessage: '✓ Valid start date' });
+        if (orderEndDate) this.addFieldValidation(orderEndDate, 'date', { successMessage: '✓ Valid end date' });
+
+        // Payment amount validation
+        const amountReceivedInput = document.getElementById('amountReceived');
+        if (amountReceivedInput) {
+            this.addFieldValidation(amountReceivedInput, 'decimal', {
+                successMessage: '✓ Valid amount'
+            });
+        }
+
+        // Quantity inputs (for products)
+        const quantityInputs = document.querySelectorAll('input[type="number"].quantity-input, input[id*="quantity"], input[name*="quantity"]');
+        quantityInputs.forEach(input => {
+            this.addFieldValidation(input, 'quantity', {
+                successMessage: '✓ Valid quantity'
+            });
+        });
     }
 
     // Check password strength and return appropriate level
@@ -446,6 +745,82 @@ class FormValidator {
         }
     }
 
+    // Setup validation for checkout form
+    setupCheckoutValidation() {
+        // Phone number validation
+        const phoneInput = document.getElementById('phone-number');
+        this.addFieldValidation(phoneInput, 'phone', {
+            successMessage: '✓ Valid Philippine number'
+        });
+
+        // Payment amount validation
+        const paymentAmountInput = document.getElementById('payment-amount');
+        this.addFieldValidation(paymentAmountInput, 'decimal', {
+            successMessage: '✓ Valid payment amount'
+        });
+
+        // Bank details validation
+        const bankAccountInput = document.getElementById('bank-account');
+        const bankNameInput = document.getElementById('bank-name');
+        this.addFieldValidation(bankAccountInput, 'required', {
+            successMessage: '✓ Bank account provided'
+        });
+        this.addFieldValidation(bankNameInput, 'text', {
+            successMessage: '✓ Valid bank name'
+        });
+
+        // GCash details validation
+        const gcashNumberInput = document.getElementById('gcash-number');
+        const gcashNameInput = document.getElementById('gcash-name');
+        this.addFieldValidation(gcashNumberInput, 'phone', {
+            successMessage: '✓ Valid GCash number'
+        });
+        this.addFieldValidation(gcashNameInput, 'text', {
+            successMessage: '✓ Valid account name'
+        });
+
+        // Cheque details validation
+        const chequeNumberInput = document.getElementById('cheque-number');
+        const chequeBankInput = document.getElementById('cheque-bank');
+        this.addFieldValidation(chequeNumberInput, 'required', {
+            successMessage: '✓ Cheque number provided'
+        });
+        this.addFieldValidation(chequeBankInput, 'text', {
+            successMessage: '✓ Valid bank name'
+        });
+
+        // Split percentage custom input validation
+        const splitPercentCustomInput = document.getElementById('split-percent-custom');
+        if (splitPercentCustomInput) {
+            this.addFieldValidation(splitPercentCustomInput, 'integer', {
+                successMessage: '✓ Valid percentage'
+            });
+        }
+
+        // Payment reference validation (required for non-COD methods)
+        const paymentReferenceInput = document.getElementById('payment-reference');
+        if (paymentReferenceInput) {
+            this.addFieldValidation(paymentReferenceInput, 'required', {
+                successMessage: '✓ Payment reference provided'
+            });
+        }
+    }
+
+    // Setup validation for profile form
+    setupProfileValidation() {
+        // Username validation (readonly, so no validation needed)
+
+        // Phone number validation
+        const phoneNumberInput = document.getElementById('phone-number');
+        if (phoneNumberInput && !phoneNumberInput.disabled) {
+            this.addFieldValidation(phoneNumberInput, 'phone', {
+                successMessage: '✓ Valid Philippine number'
+            });
+        }
+
+        // Gender radio buttons - no validation needed as one should be selected by default
+    }
+
     // Add enhanced button loading state
     setButtonLoading(buttonId, isLoading) {
         const button = document.getElementById(buttonId);
@@ -470,4 +845,4 @@ window.FormValidator = formValidator;
 // Export validation function for signup form
 window.validateSignupForm = () => formValidator.validateSignupForm();
 window.clearAllValidation = () => formValidator.clearAllValidation();
-window.setButtonLoading = (buttonId, isLoading) => formValidator.setButtonLoading(buttonId, isLoading); 
+window.setButtonLoading = (buttonId, isLoading) => formValidator.setButtonLoading(buttonId, isLoading);
