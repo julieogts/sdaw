@@ -877,6 +877,14 @@ app.get('/api/orders/:userId', async (req, res) => {
             date: order.orderDate || order.createdAt,
             status: order.status,
             payment: order.payment,
+            // Add individual payment fields
+            paymentMethod: order.paymentMethod,
+            paymentType: order.paymentType,
+            paymentSplitPercent: order.paymentSplitPercent,
+            paymentReference: order.paymentReference,
+            paymentAmount: order.paymentAmount,
+            changeUponDelivery: order.changeUponDelivery,
+            proofOfPayment: order.proofOfPayment,
             shipping: { 
                 address: order.address,
                 phoneNumber: order.phoneNumber || order.shipping?.phoneNumber || ''
@@ -887,10 +895,6 @@ app.get('/api/orders/:userId', async (req, res) => {
             orderNumber: order.orderNumber,
             fullName: order.fullName,
             email: order.email,
-            paymentMethod: order.paymentMethod,
-            paymentReference: order.paymentReference,
-            paymentAmount: order.paymentAmount,
-            proofOfPayment: order.proofOfPayment,
             total: order.total
         }));
         

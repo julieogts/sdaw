@@ -638,13 +638,13 @@
                         <label for="payment-method">Payment Method</label>
                         <div class="payment-method-row" id="payment-method-row" style="display:flex; gap: 0.5rem; align-items: center;">
                             <select id="payment-method" class="form-control" style="flex: 0 0 70%; max-width: 70%;">
-                                <option value="bank">Bank Transfer</option>
+                                <option value="bank" selected>Bank Transfer</option>
                                 <option value="gcash">GCash</option>
                                 <option value="cheque">Cheque</option>
                                 <option value="cod">Cash on Delivery</option>
                             </select>
                             <select id="payment-type" class="form-control" style="flex: 0 0 30%; max-width: 30%;">
-                                <option value="full">Full Payment</option>
+                                <option value="full" selected>Full Payment</option>
                                 <option value="split">Split Payment</option>
                             </select>
                         </div>
@@ -1091,6 +1091,7 @@
             if (paymentTypeEl) {
                 paymentTypeEl.addEventListener('change', refreshSplitVisibility);
                 refreshSplitVisibility();
+                
             }
             
             // Add event listeners for split percentage changes
@@ -1491,6 +1492,7 @@
             }
             const payingByCOD = document.getElementById('payment-method').value === 'cod';
             const changeDelivery = document.getElementById('change-delivery');
+            
             const formData = {
                 fullName: document.getElementById('full-name').value,
                 email: document.getElementById('email').value,
@@ -1533,8 +1535,11 @@
                     address: orderData.address,
                     phoneNumber: orderData.phoneNumber,
                     paymentMethod: orderData.paymentMethod,
+                    paymentType: orderData.paymentType,
+                    paymentSplitPercent: orderData.paymentSplitPercent,
                     paymentReference: orderData.paymentReference,
                     paymentAmount: parseFloat(orderData.paymentAmount),
+                    changeUponDelivery: orderData.changeUponDelivery,
                     notes: orderData.notes,
                     cartItems: (orderData.cartItems || []).map(item => ({
                         ...item,
