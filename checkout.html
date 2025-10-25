@@ -1042,7 +1042,7 @@
             
             function updateOrderSummaryTotals() {
                 const subtotal = myCart.getSubtotal();
-                const deliveryFee = 0; // hardcoded for now
+                const deliveryFee = subtotal >= 15000 ? 0 : subtotal < 1000 ? 200 : 3000;
                 const fullTotal = subtotal + deliveryFee;
 
                 // Update subtotal and delivery fee
@@ -1493,6 +1493,7 @@
             const payingByCOD = document.getElementById('payment-method').value === 'cod';
             const changeDelivery = document.getElementById('change-delivery');
             
+            const deliveryFee = window.myCart.getSubtotal() >= 15000 ? 0 : window.myCart.getSubtotal() < 1000 ? 200 : 3000;
             const formData = {
                 fullName: document.getElementById('full-name').value,
                 email: document.getElementById('email').value,
@@ -1507,8 +1508,8 @@
                 notes: notesValue || 'no additional notes',
                 cartItems: window.myCart.items,
                 subtotal: window.myCart.getSubtotal(),
-                deliveryFee: 0, // Currently hardcoded to 0, can be made dynamic later
-                total: window.myCart.getTotal(),
+                deliveryFee: deliveryFee,
+                total: window.myCart.getTotal() + deliveryFee,
                 proofOfPayment: payingByCOD ? null : (window.getUploadedFile ? window.getUploadedFile() : null)
             };
             
