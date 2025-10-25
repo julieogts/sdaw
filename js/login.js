@@ -1,3 +1,11 @@
+// Utility function to format prices in PHP currency
+function formatPHPPrice(price) {
+    return new Intl.NumberFormat('en-PH', {
+        style: 'currency',
+        currency: 'PHP'
+    }).format(price);
+}
+
 // Wait for DOM to be ready
 document.addEventListener('DOMContentLoaded', () => {
     const loginBtn = document.getElementById('loginBtn');
@@ -198,7 +206,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Set up cart button click handler
     if (cartBtn) {
-        cartBtn.onclick = (e) => {
+        // Remove any existing event listeners to prevent duplicates
+        cartBtn.onclick = null;
+        cartBtn.addEventListener('click', (e) => {
             e.preventDefault();
             if (!Auth.isLoggedIn()) {
                 showToast('Please log in to view your cart.');
@@ -206,8 +216,34 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 window.location.href = 'cart.html';
             }
-        };
+        });
+    } else {
+        console.error('Cart button not found in DOM');
     }
+
+    // Ensure cart button is properly initialized
+    function initializeCartButton() {
+        const cartBtn = document.getElementById('cartBtn');
+        const cartCount = document.getElementById('cartCount');
+        
+        if (cartBtn) {
+            // Make sure cart button is visible
+            cartBtn.style.display = 'flex';
+            cartBtn.style.visibility = 'visible';
+            
+            // Initialize cart count
+            if (cartCount) {
+                Auth.updateCartCount();
+            }
+            
+            console.log('Cart button initialized successfully');
+        } else {
+            console.error('Cart button not found during initialization');
+        }
+    }
+
+    // Initialize cart button after a short delay to ensure DOM is ready
+    setTimeout(initializeCartButton, 100);
 
     // Cart dropdown functionality
     function showCartDropdown() {
@@ -230,14 +266,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const items = cart.getItems();
         if (!items.length) {
             cartDropdownContent.innerHTML = `
-function formatPHPPrice(price) {
-    return new Intl.NumberFormat('en-PH', {
-        style: 'currency',
-        currency: 'PHP'
-    }).format(price);
-}
-
-            <div class="cart-empty">
+                <div class="cart-empty">
                     <img src="images/cart-empty.png" alt="Empty Cart" />
                     <div>Empty Cart</div>
                 </div>

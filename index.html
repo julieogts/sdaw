@@ -1459,17 +1459,7 @@
             }
         });
 
-        // Cart button redirect to login if not logged in
-        document.getElementById('cartBtn').addEventListener('click', (e) => {
-            e.preventDefault(); // Prevent default link navigation
-            if (!Auth.isLoggedIn()) {
-                showToast('Please log in to view your cart.');
-                window.showLoginModal();
-            } else {
-                // If logged in, navigate to cart page
-                window.location.href = 'cart.html';
-            }
-        });
+        // Cart button functionality is handled by login.js
 
         // Add Google Sign-In handler function
         function handleGoogleSignIn(response) {
