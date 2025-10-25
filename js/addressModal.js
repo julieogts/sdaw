@@ -266,6 +266,45 @@ class AddressModalManager {
         // Postal code validation
         document.getElementById('postalCode').addEventListener('input', function(e) {
             e.target.value = e.target.value.replace(/\D/g, '').slice(0, 4);
+            // Validate postal code in real-time
+            if (window.InputValidator) {
+                window.InputValidator.validateField(e.target, 'postalCode');
+            }
+        });
+
+        // Street address validation
+        document.getElementById('streetAddress').addEventListener('input', function(e) {
+            if (window.InputValidator) {
+                window.InputValidator.validateField(e.target, 'text', { fieldName: 'streetAddress' });
+            }
+        });
+
+        // Barangay validation
+        document.getElementById('barangay').addEventListener('input', function(e) {
+            if (window.InputValidator) {
+                window.InputValidator.validateField(e.target, 'text', { fieldName: 'barangay' });
+            }
+        });
+
+        // City validation
+        document.getElementById('city').addEventListener('input', function(e) {
+            if (window.InputValidator) {
+                window.InputValidator.validateField(e.target, 'text', { fieldName: 'city' });
+            }
+        });
+
+        // Province validation
+        document.getElementById('province').addEventListener('input', function(e) {
+            if (window.InputValidator) {
+                window.InputValidator.validateField(e.target, 'text', { fieldName: 'province' });
+            }
+        });
+
+        // Address label validation
+        document.getElementById('addressLabel').addEventListener('input', function(e) {
+            if (window.InputValidator) {
+                window.InputValidator.validateField(e.target, 'text', { fieldName: 'addressLabel' });
+            }
         });
     }
 
@@ -360,7 +399,7 @@ class AddressModalManager {
             };
             console.log('DEBUG: addressData to save:', addressData);
 
-            // Validate required fields
+            // Validate required fields using SecurityValidator
             const requiredFields = ['label', 'streetAddress', 'barangay', 'city', 'postalCode', 'province'];
             for (const field of requiredFields) {
                 if (!addressData[field]) {
@@ -368,9 +407,35 @@ class AddressModalManager {
                 }
             }
 
-            // Validate postal code
-            if (!/^\d{4}$/.test(addressData.postalCode)) {
-                throw new Error('Postal code must be exactly 4 digits');
+            // Enhanced validation using SecurityValidator
+            const labelValidation = SecurityValidator.validateFullName(addressData.label);
+            if (!labelValidation.valid) {
+                throw new Error(labelValidation.message);
+            }
+
+            const streetValidation = SecurityValidator.validateSearchQuery(addressData.streetAddress);
+            if (!streetValidation.valid) {
+                throw new Error('Invalid street address format');
+            }
+
+            const barangayValidation = SecurityValidator.validateSearchQuery(addressData.barangay);
+            if (!barangayValidation.valid) {
+                throw new Error('Invalid barangay format');
+            }
+
+            const cityValidation = SecurityValidator.validateSearchQuery(addressData.city);
+            if (!cityValidation.valid) {
+                throw new Error('Invalid city format');
+            }
+
+            const provinceValidation = SecurityValidator.validateSearchQuery(addressData.province);
+            if (!provinceValidation.valid) {
+                throw new Error('Invalid province format');
+            }
+
+            const postalCodeValidation = SecurityValidator.validatePostalCode(addressData.postalCode);
+            if (!postalCodeValidation.valid) {
+                throw new Error(postalCodeValidation.message);
             }
 
             // Save address

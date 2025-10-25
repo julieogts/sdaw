@@ -4,19 +4,22 @@ const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
+const { securityConfig, securityMiddleware } = require('./security-config');
 
 require('dotenv').config();
 
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Middleware
-app.use(cors({
-    origin: true,
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
-}));
+// Security middleware
+app.use(securityMiddleware.setSecurityHeaders);
+app.use(securityMiddleware.rateLimit);
+app.use(securityMiddleware.sanitizeInput);
+
+// CORS configuration
+app.use(cors(securityConfig.cors));
+
+// Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 app.use(express.static('.')); // Serve static files from current directory
@@ -46,18 +49,12 @@ const client = new MongoClient(uri);
 // Connect to MongoDB
 async function connectToMongo() {
     try {
-        console.log("🔌 Attempting to connect to MongoDB...");
-        console.log("🌐 Connection URI:", uri.replace(/\/\/[^:]+:[^@]+@/, '//*****:*****@')); // Hide credentials
         await client.connect();
-        console.log("✅ Connected to MongoDB successfully!");
         
         // Test the connection immediately
-        console.log("🏓 Testing connection with ping...");
         await client.db("admin").command({ ping: 1 });
-        console.log("✅ MongoDB ping successful!");
         
         // Test access to our database
-        console.log("📊 Testing access to MyProductsDb...");
         const database = client.db("MyProductsDb");
         
         // Test all three order collections
@@ -69,9 +66,6 @@ async function connectToMongo() {
         const acceptedCount = await acceptedCollection.countDocuments({});
         const deliveredCount = await deliveredCollection.countDocuments({});
         
-        console.log(`✅ Found ${pendingCount} total orders in PendingOrders collection`);
-        console.log(`✅ Found ${acceptedCount} total orders in AcceptedOrders collection`);
-        console.log(`✅ Found ${deliveredCount} total orders in DeliveredOrders collection`);
         
     } catch (error) {
         console.error("❌ Error connecting to MongoDB:", error);
@@ -116,16 +110,11 @@ app.get('/api/products/:id', async (req, res) => {
 
 // API endpoint to bulk update stock (for checkout) - MUST BE BEFORE :id route
 app.put('/api/products/bulk-stock', async (req, res) => {
-    console.log('🔥 BULK STOCK ENDPOINT HIT! 🔥');
-    console.log('Request method:', req.method);
-    console.log('Request URL:', req.url);
-    console.log('Request body:', JSON.stringify(req.body, null, 2));
     
     try {
         const { ObjectId } = require('mongodb');
         const { updates } = req.body; // Array of {id, quantity} objects
         
-        console.log('✅ Bulk stock update request received:', JSON.stringify(req.body, null, 2));
         
         if (!updates) {
             console.error('❌ No updates provided in request body');
@@ -137,7 +126,6 @@ app.put('/api/products/bulk-stock', async (req, res) => {
             return res.status(400).json({ error: "Updates must be an array" });
         }
         
-        console.log(`📦 Processing ${updates.length} stock updates...`);
         
         const database = client.db("MyProductsDb");
         const collection = database.collection("Products");
@@ -146,7 +134,6 @@ app.put('/api/products/bulk-stock', async (req, res) => {
         const results = [];
         for (let i = 0; i < updates.length; i++) {
             const update = updates[i];
-            console.log(`🔄 Processing update ${i + 1}/${updates.length} for product: ${update.id}, quantity: ${update.quantity}`);
             
             // Validate the update object
             if (!update.id || typeof update.quantity !== 'number') {
@@ -155,14 +142,12 @@ app.put('/api/products/bulk-stock', async (req, res) => {
             }
             
             // Check if the product exists first
-            console.log(`🔍 Looking for product with ID: ${update.id}`);
             const existingProduct = await collection.findOne({ _id: new ObjectId(update.id) });
             if (!existingProduct) {
                 console.error(`❌ Product not found: ${update.id}`);
                 return res.status(404).json({ error: `Product not found: ${update.id}` });
             }
             
-            console.log(`✅ Found product: ${existingProduct.name}, current stock: ${existingProduct.stockQuantity}`);
             
             // Check if there's enough stock
             if (existingProduct.stockQuantity < update.quantity) {
@@ -173,17 +158,14 @@ app.put('/api/products/bulk-stock', async (req, res) => {
             }
             
             // Update the stock
-            console.log(`📉 Reducing stock by ${update.quantity} for ${existingProduct.name}`);
             const result = await collection.updateOne(
                 { _id: new ObjectId(update.id) },
                 { $inc: { stockQuantity: -update.quantity } }
             );
             
-            console.log(`✅ Stock update result for ${existingProduct.name}:`, result);
             results.push(result);
         }
         
-        console.log('🎉 All stock updates completed successfully');
         res.json({ success: true, message: "Stock updated successfully", results });
     } catch (error) {
         console.error("❌ Error updating bulk stock:", error);
@@ -252,7 +234,6 @@ app.post('/api/products/validate-stock', async (req, res) => {
         const { ObjectId } = require('mongodb');
         const { items } = req.body; // Array of {id, quantity} objects
         
-        console.log('🔍 Stock validation request received:', JSON.stringify(req.body, null, 2));
         
         if (!items || !Array.isArray(items)) {
             return res.status(400).json({ error: "Items array is required" });
@@ -297,7 +278,6 @@ app.post('/api/products/validate-stock', async (req, res) => {
             });
         }
         
-        console.log(`✅ Stock validation completed. All valid: ${allValid}`);
         
         res.json({
             success: true,
@@ -317,7 +297,6 @@ app.post('/api/products/reserve-stock', async (req, res) => {
         const { ObjectId } = require('mongodb');
         const { items, reservationId, expiresInMinutes = 15 } = req.body;
         
-        console.log('🔒 Stock reservation request received:', JSON.stringify(req.body, null, 2));
         
         if (!items || !Array.isArray(items) || !reservationId) {
             return res.status(400).json({ error: "Items array and reservationId are required" });
@@ -340,7 +319,6 @@ app.post('/api/products/reserve-stock', async (req, res) => {
         
         await reservationsCollection.insertOne(reservation);
         
-        console.log(`✅ Stock reservation created: ${reservationId}, expires at: ${expiresAt}`);
         
         res.json({
             success: true,
@@ -361,7 +339,6 @@ app.post('/api/products/restore-stock', async (req, res) => {
         const { ObjectId } = require('mongodb');
         const { items, reason = 'Order cancelled' } = req.body;
         
-        console.log('🔄 Stock restoration request received:', JSON.stringify(req.body, null, 2));
         
         if (!items || !Array.isArray(items)) {
             return res.status(400).json({ error: "Items array is required" });
@@ -390,7 +367,6 @@ app.post('/api/products/restore-stock', async (req, res) => {
                 { $inc: { stockQuantity: item.quantity } }
             );
             
-            console.log(`📈 Restored ${item.quantity} units for ${product.name}`);
             results.push({
                 productId: item.id,
                 productName: product.name,
@@ -399,7 +375,6 @@ app.post('/api/products/restore-stock', async (req, res) => {
             });
         }
         
-        console.log(`✅ Stock restoration completed for ${results.length} products`);
         
         res.json({
             success: true,
@@ -459,7 +434,6 @@ app.get('/api/debug/test', (req, res) => {
 // API endpoint to save an order
 app.post('/api/orders', async (req, res) => {
     try {
-        console.log('📦 New order submission received');
         console.log('Request body keys:', Object.keys(req.body));
         
         // Handle both old format (userId, order) and new format (direct order data)
@@ -472,8 +446,6 @@ app.post('/api/orders', async (req, res) => {
             orderData = req.body;
         }
         
-        console.log('Order data userId:', orderData.userId);
-        console.log('Order data keys:', Object.keys(orderData));
         
         if (!orderData.userId) {
             return res.status(400).json({ error: "Missing userId" });
@@ -560,16 +532,13 @@ app.post('/api/orders', async (req, res) => {
             source: 'checkout_page'
         };
         
-        console.log('💾 Saving formatted order to database');
         console.log('Order number:', formattedOrder.orderNumber);
         console.log('Customer:', formattedOrder.fullName);
-        console.log('Total:', formattedOrder.total);
         console.log('Status:', formattedOrder.status);
         console.log('Items count:', formattedOrder.itemsordered.length);
         
         const result = await collection.insertOne(formattedOrder);
         
-        console.log('✅ Order saved successfully with ID:', result.insertedId);
         
         res.json({ 
             success: true, 
@@ -587,32 +556,22 @@ app.post('/api/orders', async (req, res) => {
 
 // API endpoint to get pending orders for staff (MUST come before /:userId route)
 app.get('/api/orders/pending', async (req, res) => {
-    console.log('🔍 Pending orders endpoint hit!');
-    console.log('🌐 Client connection state:', client.topology?.s?.state);
     try {
-        console.log('🔌 Testing MongoDB connection...');
         await client.db("admin").command({ ping: 1 });
-        console.log('✅ MongoDB connection is alive');
         
         const database = client.db("MyProductsDb");
         const collection = database.collection("PendingOrders");
         
-        console.log('📊 Getting total order count...');
         const totalCount = await collection.countDocuments({});
-        console.log(`📈 Total orders in database: ${totalCount}`);
         
-        console.log('📋 Searching for orders with status: "Pending"');
         
         // First, let's see what statuses actually exist
         const allStatuses = await collection.distinct("status");
-        console.log('🔍 All distinct statuses in database:', allStatuses);
         
         // Check for both "Pending" and "pending" (case sensitive issue?)
         const pendingUpperCase = await collection.find({ status: "Pending" }).toArray();
         const pendingLowerCase = await collection.find({ status: "pending" }).toArray();
         
-        console.log(`📊 Orders with status "Pending": ${pendingUpperCase.length}`);
-        console.log(`📊 Orders with status "pending": ${pendingLowerCase.length}`);
         
         // Return orders with status "Pending" or "active" - include new active orders
         const pendingOrders = await collection.find({ 
@@ -625,15 +584,15 @@ app.get('/api/orders/pending', async (req, res) => {
             .sort({ createdAt: -1 })
             .toArray();
         
-        console.log(`✅ Found ${pendingOrders.length} pending orders total`);
-        console.log('📦 Orders:', JSON.stringify(pendingOrders.map(order => ({
+        // Map the orders to the required format
+        const formattedOrders = pendingOrders.map(order => ({
             id: order._id,
             buyer: order.fullName,
             status: order.status,
             total: order.total
-        })), null, 2));
+        }));
         
-        res.json(pendingOrders);
+        res.json(formattedOrders);
     } catch (error) {
         console.error("❌ Error fetching pending orders:", error);
         console.error("❌ Error details:", error.message);
@@ -645,7 +604,6 @@ app.get('/api/orders/pending', async (req, res) => {
 // API endpoint to get comprehensive staff statistics from all collections including walk-ins
 app.get('/api/orders/stats/staff-overview', async (req, res) => {
     try {
-        console.log('📊 Staff comprehensive stats requested');
         
         const database = client.db("MyProductsDb");
         
@@ -659,7 +617,6 @@ app.get('/api/orders/stats/staff-overview', async (req, res) => {
         const totalAccepted = await acceptedCollection.countDocuments({});
         const totalDelivered = await deliveredCollection.countDocuments({});
         
-        console.log(`📊 Found ${totalPending} pending, ${totalAccepted} accepted, ${totalDelivered} delivered orders`);
         
         // Calculate total revenue from both accepted and delivered orders
         const acceptedOrders = await acceptedCollection.find({}).toArray();
@@ -680,7 +637,6 @@ app.get('/api/orders/stats/staff-overview', async (req, res) => {
             totalOrders: totalPending + totalAccepted + totalDelivered
         };
         
-        console.log('📊 Staff comprehensive stats response:', stats);
         
         res.json(stats);
     } catch (error) {
@@ -742,7 +698,6 @@ app.get('/api/orders/stats/:userId', async (req, res) => {
 app.get('/api/orders/all-staff', async (req, res) => {
     try {
         console.log('🎯 HIT: /api/orders/all-staff endpoint - this is the correct route!');
-        console.log('📋 Fetching all orders from all collections for staff dashboard');
         
         const database = client.db("MyProductsDb");
         const pendingCollection = database.collection("PendingOrders");
@@ -760,7 +715,6 @@ app.get('/api/orders/all-staff', async (req, res) => {
             walkInCollection.find({}).sort({ createdAt: -1 }).toArray()
         ]);
         
-        console.log(`🔍 Raw collection counts - Pending: ${pendingOrders.length}, Accepted: ${acceptedOrders.length}, Delivered: ${deliveredOrders.length}, Returned: ${returnedOrders.length}, Walk-in: ${walkInOrders.length}`);
         
         // Add collection info to each order for identification
         const allOrders = [
@@ -774,8 +728,6 @@ app.get('/api/orders/all-staff', async (req, res) => {
         // Sort all orders by creation date (newest first)
         allOrders.sort((a, b) => new Date(b.createdAt || b.orderDate || b.returnedAt) - new Date(a.createdAt || a.orderDate || a.returnedAt));
         
-        console.log(`✅ Found ${pendingOrders.length} pending, ${acceptedOrders.length} accepted, ${deliveredOrders.length} delivered, ${returnedOrders.length} returned, ${walkInOrders.length} walk-in orders`);
-        console.log(`📊 Total orders returned: ${allOrders.length}`);
         
         res.json(allOrders);
         
@@ -789,7 +741,6 @@ app.get('/api/orders/all-staff', async (req, res) => {
 app.get('/api/orders/:userId', async (req, res) => {
     try {
         const userId = req.params.userId;
-        console.log(`🔍 HIT: /api/orders/:userId endpoint with userId: "${userId}"`);
         
         // Add special check for all-staff
         if (userId === 'all-staff') {
@@ -799,14 +750,11 @@ app.get('/api/orders/:userId', async (req, res) => {
             });
         }
         
-        console.log(`🔍 Fetching orders for userId: "${userId}"`);
         
         // Handle both string and number userIds
         const userIdAsString = String(userId);
         const userIdAsNumber = isNaN(userId) ? null : Number(userId);
         
-        console.log(`🔍 Searching for userId as string: "${userIdAsString}"`);
-        console.log(`🔍 Searching for userId as number: ${userIdAsNumber}`);
         
         const database = client.db("MyProductsDb");
         
@@ -820,7 +768,6 @@ app.get('/api/orders/:userId', async (req, res) => {
             { $or: [{ userId: userIdAsString }, { userId: userIdAsNumber }] } :
             { userId: userIdAsString };
         
-        console.log('🔍 Using query:', JSON.stringify(userQuery));
         
         // Get orders from each collection
         const pendingOrders = await pendingCollection.find(userQuery)
@@ -835,15 +782,10 @@ app.get('/api/orders/:userId', async (req, res) => {
             .sort({ createdAt: -1 })
             .toArray();
         
-        console.log(`📊 Found ${pendingOrders.length} pending orders for user ${userId}`);
-        console.log(`📊 Found ${acceptedOrders.length} accepted orders for user ${userId}`);
-        console.log(`📊 Found ${deliveredOrders.length} delivered orders for user ${userId}`);
         
         // Debug: Show what userIds exist in the pending collection
         const allPendingOrders = await pendingCollection.find({}).toArray();
         const existingUserIds = [...new Set(allPendingOrders.map(order => order.userId))];
-        console.log(`🔍 Existing userIds in PendingOrders:`, existingUserIds);
-        console.log(`🔍 Looking for userId: "${userId}" (type: ${typeof userId})`);
         
         // Add status to each order based on collection
         const pendingWithStatus = pendingOrders.map(order => ({
@@ -887,7 +829,7 @@ app.get('/api/orders/:userId', async (req, res) => {
             proofOfPayment: order.proofOfPayment,
             shipping: { 
                 address: order.address,
-                phoneNumber: order.phoneNumber || order.shipping?.phoneNumber || ''
+                phoneNumber: order.phoneNumber || (order.shipping && order.shipping.phoneNumber) || ''
             },
             notes: order.notes,
             _id: order._id,
@@ -901,7 +843,6 @@ app.get('/api/orders/:userId', async (req, res) => {
         // Sort by date (newest first)
         formattedOrders.sort((a, b) => new Date(b.date) - new Date(a.date));
         
-        console.log(`✅ Returning ${formattedOrders.length} formatted orders for user ${userId}`);
         res.json(formattedOrders);
     } catch (error) {
         console.error("Error fetching user orders:", error);
@@ -944,9 +885,7 @@ app.get('/api/orders', async (req, res) => {
             .sort({ createdAt: -1 })
             .toArray();
         
-        console.log(`📈 Total orders in database: ${allOrders.length}`);
         if (allOrders.length > 0) {
-            console.log('📊 Order statuses found:', [...new Set(allOrders.map(o => o.status))]);
         }
         
         res.json(allOrders);
@@ -988,7 +927,6 @@ app.put('/api/orders/:orderId/status', async (req, res) => {
 // API endpoint to get orders with proof of payment (for staff review)
 app.get('/api/orders/with-proof', async (req, res) => {
     try {
-        console.log('🖼️ Fetching orders with proof of payment...');
         
         const database = client.db("MyProductsDb");
         const collection = database.collection("PendingOrders");
@@ -1001,7 +939,6 @@ app.get('/api/orders/with-proof', async (req, res) => {
             .sort({ createdAt: -1 })
             .toArray();
         
-        console.log(`✅ Found ${ordersWithProof.length} orders with proof of payment`);
         
         // Format orders for staff review
         const formattedOrders = ordersWithProof.map(order => ({
@@ -1096,7 +1033,7 @@ app.post('/api/orders/migrate', async (req, res) => {
                     const existingOrder = await collection.findOne({
                         userId: userId,
                         original_date: order.date,
-                        "itemsordered.item_name": order.items?.[0]?.name
+                        "itemsordered.item_name": (order.items && order.items[0] && order.items[0].name) || ''
                     });
                     
                     if (existingOrder) {
@@ -1119,7 +1056,7 @@ app.post('/api/orders/migrate', async (req, res) => {
                             year: '2-digit'
                         }),
                         buyerinfo: order.buyerinfo || order.username || `user_${userId}`,
-                        address: order.shipping?.address || order.address || '',
+                        address: (order.shipping && order.shipping.address) || order.address || '',
                         total: (order.items || []).reduce((sum, item) => sum + ((item.price || 0) * (item.quantity || 1)), 0) + 150,
                         status: order.status || 'Pending',
                         payment: order.payment || {},
@@ -1158,6 +1095,7 @@ app.post('/api/staff/login', async (req, res) => {
     try {
         const { username, password } = req.body;
         
+        // Input validation and sanitization
         if (!username || !password) {
             return res.status(400).json({ 
                 success: false, 
@@ -1165,13 +1103,31 @@ app.post('/api/staff/login', async (req, res) => {
             });
         }
         
+        // Sanitize inputs
+        const sanitizedUsername = String(username).trim().toLowerCase();
+        const sanitizedPassword = String(password).trim();
+        
+        // Validate input length and format
+        if (sanitizedUsername.length < 3 || sanitizedUsername.length > 50) {
+            return res.status(400).json({ 
+                success: false, 
+                message: "Invalid username format" 
+            });
+        }
+        
+        if (sanitizedPassword.length < 6 || sanitizedPassword.length > 128) {
+            return res.status(400).json({ 
+                success: false, 
+                message: "Invalid password format" 
+            });
+        }
+        
         const database = client.db("MyProductsDb");
         const collection = database.collection("StaffCredentials");
         
-        // Find user with matching username and password (unhashed for now)
+        // Find user with matching username
         const staffUser = await collection.findOne({ 
-            username: username,
-            password: password // Note: In production, passwords should be hashed
+            username: sanitizedUsername
         });
         
         if (!staffUser) {
@@ -1180,6 +1136,27 @@ app.post('/api/staff/login', async (req, res) => {
                 message: "Invalid credentials" 
             });
         }
+        
+        // Verify password using bcrypt
+        const passwordMatch = await bcrypt.compare(sanitizedPassword, staffUser.password);
+        
+        if (!passwordMatch) {
+            return res.status(401).json({ 
+                success: false, 
+                message: "Invalid credentials" 
+            });
+        }
+        
+        // Update last login time
+        await collection.updateOne(
+            { _id: staffUser._id },
+            { 
+                $set: { 
+                    lastLogin: new Date(),
+                    lastUpdated: new Date()
+                }
+            }
+        );
         
         // Return success with user info (excluding password)
         const { password: _, ...userInfo } = staffUser;
@@ -1284,7 +1261,6 @@ app.put('/api/user-addresses/:id/default', async (req, res) => {
 // API endpoint to add order to AcceptedOrders collection
 app.post('/api/orders/accepted', async (req, res) => {
     try {
-        console.log('📋 Adding order to AcceptedOrders collection');
         
         const orderData = req.body;
         
@@ -1305,7 +1281,6 @@ app.post('/api/orders/accepted', async (req, res) => {
         
         const result = await collection.insertOne(acceptedOrder);
         
-        console.log('✅ Order added to AcceptedOrders:', result.insertedId);
         
         res.json({ 
             success: true, 
@@ -1349,7 +1324,6 @@ app.delete('/api/orders/pending/:orderId', async (req, res) => {
         const { ObjectId } = require('mongodb');
         const orderId = req.params.orderId;
         
-        console.log('🗑️ Deleting order from PendingOrders:', orderId);
         
         const database = client.db("MyProductsDb");
         const collection = database.collection("PendingOrders");
@@ -1360,7 +1334,6 @@ app.delete('/api/orders/pending/:orderId', async (req, res) => {
             return res.status(404).json({ error: "Order not found in PendingOrders" });
         }
         
-        console.log('✅ Order deleted from PendingOrders:', orderId);
         
         res.json({ 
             success: true, 
@@ -1377,7 +1350,6 @@ app.delete('/api/orders/pending/:orderId', async (req, res) => {
 // API endpoint to add order to DeliveredOrders collection
 app.post('/api/orders/delivered', async (req, res) => {
     try {
-        console.log('🚚 Adding order to DeliveredOrders collection');
         
         const orderData = req.body;
         
@@ -1398,7 +1370,6 @@ app.post('/api/orders/delivered', async (req, res) => {
         
         const result = await collection.insertOne(deliveredOrder);
         
-        console.log('✅ Order added to DeliveredOrders:', result.insertedId);
         
         res.json({ 
             success: true, 
@@ -1442,7 +1413,6 @@ app.delete('/api/orders/accepted/:orderId', async (req, res) => {
         const { ObjectId } = require('mongodb');
         const orderId = req.params.orderId;
         
-        console.log('🗑️ Deleting order from AcceptedOrders:', orderId);
         
         const database = client.db("MyProductsDb");
         const collection = database.collection("AcceptedOrders");
@@ -1453,7 +1423,6 @@ app.delete('/api/orders/accepted/:orderId', async (req, res) => {
             return res.status(404).json({ error: "Order not found in AcceptedOrders" });
         }
         
-        console.log('✅ Order deleted from AcceptedOrders:', orderId);
         
         res.json({ 
             success: true, 
@@ -1470,7 +1439,6 @@ app.delete('/api/orders/accepted/:orderId', async (req, res) => {
 // API endpoint to save walk-in orders from POS
 app.post('/api/orders/walkin', async (req, res) => {
     try {
-        console.log('🚶 Saving walk-in order from POS:', JSON.stringify(req.body, null, 2));
         
         const orderData = req.body;
         
@@ -1501,7 +1469,6 @@ app.post('/api/orders/walkin', async (req, res) => {
         
         const result = await collection.insertOne(walkInOrder);
         
-        console.log('✅ Walk-in order saved successfully:', result.insertedId);
         
         res.json({ 
             success: true, 
@@ -1519,7 +1486,6 @@ app.post('/api/orders/walkin', async (req, res) => {
 // API endpoint to get all walk-in orders
 app.get('/api/orders/walkin', async (req, res) => {
     try {
-        console.log('📋 Fetching all walk-in orders');
         
         const database = client.db("MyProductsDb");
         const collection = database.collection("WalkInOrders");
@@ -1528,7 +1494,6 @@ app.get('/api/orders/walkin', async (req, res) => {
             .sort({ createdAt: -1 })
             .toArray();
         
-        console.log(`✅ Found ${walkInOrders.length} walk-in orders`);
         
         res.json(walkInOrders);
         
@@ -1541,7 +1506,6 @@ app.get('/api/orders/walkin', async (req, res) => {
 // API endpoint to get walk-in orders stats
 app.get('/api/orders/walkin/stats', async (req, res) => {
     try {
-        console.log('📊 Fetching walk-in orders statistics');
         
         const database = client.db("MyProductsDb");
         const collection = database.collection("WalkInOrders");
@@ -1565,7 +1529,6 @@ app.get('/api/orders/walkin/stats', async (req, res) => {
             averageOrderValue: revenueResult.length > 0 ? revenueResult[0].avgOrderValue : 0
         };
         
-        console.log('✅ Walk-in order stats:', stats);
         
         res.json(stats);
         
@@ -1591,7 +1554,6 @@ app.get('/api/user-addresses', async (req, res) => {
         
         const addresses = await collection.find({ userId: userId }).toArray();
         
-        console.log(`✅ Found ${addresses.length} addresses for user ${userId}`);
         
         res.json(addresses);
         
@@ -1604,7 +1566,6 @@ app.get('/api/user-addresses', async (req, res) => {
 // API endpoint for comprehensive staff dashboard statistics
 app.get('/api/orders/stats/comprehensive', async (req, res) => {
     try {
-        console.log('📊 Fetching comprehensive staff dashboard statistics');
         
         const database = client.db("MyProductsDb");
         
@@ -1664,7 +1625,6 @@ app.get('/api/orders/stats/comprehensive', async (req, res) => {
             lastUpdated: new Date()
         };
         
-        console.log('✅ Comprehensive staff statistics:', stats);
         
         res.json(stats);
         
@@ -1677,7 +1637,6 @@ app.get('/api/orders/stats/comprehensive', async (req, res) => {
 // API endpoint to get all collections data for staff (enhanced)
 app.get('/api/orders/all-collections', async (req, res) => {
     try {
-        console.log('📋 Fetching orders from all collections for staff dashboard');
         
         const database = client.db("MyProductsDb");
         const pendingCollection = database.collection("PendingOrders");
@@ -1724,7 +1683,6 @@ app.get('/api/orders/all-collections', async (req, res) => {
             return dateB - dateA;
         });
         
-        console.log(`✅ Fetched orders: ${pendingOrders.length} pending, ${acceptedOrders.length} accepted, ${deliveredOrders.length} delivered, ${walkInOrders.length} walk-in`);
         
         res.json(allOrders);
         
@@ -1741,7 +1699,6 @@ app.put('/api/orders/:orderId/status', async (req, res) => {
         const orderId = req.params.orderId;
         const { status, updatedBy } = req.body;
         
-        console.log(`📝 Updating order ${orderId} status to: ${status}`);
         
         if (!status) {
             return res.status(400).json({ error: "Status is required" });
@@ -1771,7 +1728,6 @@ app.put('/api/orders/:orderId/status', async (req, res) => {
             return res.status(404).json({ error: "Order not found in any collection" });
         }
         
-        console.log(`📍 Found order in: ${foundInCollection.name}`);
         
         // Update the order in its current collection
         const updateData = {
@@ -1789,7 +1745,6 @@ app.put('/api/orders/:orderId/status', async (req, res) => {
             return res.status(404).json({ error: "Failed to update order" });
         }
         
-        console.log(`✅ Order ${orderId} status updated to: ${status}`);
         
         res.json({ 
             success: true, 
@@ -1807,7 +1762,6 @@ app.put('/api/orders/:orderId/status', async (req, res) => {
 // API endpoint to get order analytics for dashboard
 app.get('/api/orders/analytics', async (req, res) => {
     try {
-        console.log('📈 Fetching order analytics for dashboard');
         
         const { startDate, endDate } = req.query;
         
@@ -1849,7 +1803,6 @@ app.get('/api/orders/analytics', async (req, res) => {
             revenue: Object.values(analytics).reduce((sum, item) => sum + item.revenue, 0)
         };
         
-        console.log('✅ Order analytics calculated:', analytics);
         
         res.json(analytics);
         
@@ -1865,7 +1818,6 @@ app.post('/api/orders/move', async (req, res) => {
         const { ObjectId } = require('mongodb');
         const { orderId, operation, fromCollection, toCollection, denialReason, returnReason, returnImage } = req.body;
         
-        console.log(`🔄 Moving order ${orderId} from ${fromCollection} to ${toCollection}`);
         
         if (!orderId || !operation || !fromCollection || !toCollection) {
             return res.status(400).json({ error: "Missing required fields: orderId, operation, fromCollection, toCollection" });
@@ -1936,7 +1888,6 @@ app.post('/api/orders/move', async (req, res) => {
                 // Handle return documentation
                 if (returnReason) {
                     updatedOrder.returnReason = returnReason;
-                    console.log(`📝 Return reason recorded: ${returnReason}`);
                 }
                 
                 if (returnImage) {
@@ -1949,7 +1900,6 @@ app.post('/api/orders/move', async (req, res) => {
                 updatedOrder.returnProcessedBy = 'staff';
                 updatedOrder.returnProcessingDate = new Date();
                 
-                console.log(`✅ Return documentation complete for order ${orderId}`);
                 break;
         }
         
@@ -1972,7 +1922,6 @@ app.post('/api/orders/move', async (req, res) => {
             throw new Error('Failed to remove order from source collection');
         }
         
-        console.log(`✅ Order ${orderId} successfully moved from ${fromCollection} to ${toCollection}`);
         
         res.json({
             success: true,
@@ -1995,7 +1944,6 @@ app.get('/api/orders/:orderId/return-documentation', async (req, res) => {
         const { ObjectId } = require('mongodb');
         const { orderId } = req.params;
         
-        console.log(`📄 Fetching return documentation for order: ${orderId}`);
         
         if (!orderId) {
             return res.status(400).json({ error: "Order ID is required" });
@@ -2025,7 +1973,6 @@ app.get('/api/orders/:orderId/return-documentation', async (req, res) => {
             returnImageUploadedAt: returnedOrder.returnImageUploadedAt || null
         };
         
-        console.log(`✅ Return documentation retrieved for order ${orderId}`);
         
         res.json(returnDocumentation);
         
@@ -2038,7 +1985,6 @@ app.get('/api/orders/:orderId/return-documentation', async (req, res) => {
 // API endpoint to get all returned orders with documentation
 app.get('/api/orders/returned', async (req, res) => {
     try {
-        console.log(`📦 Fetching all returned orders with documentation`);
 
         const database = client.db("MyProductsDb");
         const returnedOrdersCollection = database.collection("ReturnedOrders");
@@ -2068,7 +2014,6 @@ app.get('/api/orders/returned', async (req, res) => {
             returnImageUploadedAt: order.returnImageUploadedAt || null
         }));
 
-        console.log(`✅ Retrieved ${formattedOrders.length} returned orders`);
 
         res.json({
             success: true,
@@ -2095,10 +2040,10 @@ app.post('/api/orders/return-request', async (req, res) => {
             returnImage
         } = req.body;
 
-        console.log('🔄 Processing return/exchange request:', {
+        console.log('Return request data:', {
             orderId,
             returnType,
-            selectedItems: selectedItems?.length,
+            selectedItems: selectedItems ? selectedItems.length : 0,
             reason,
             hasImage: !!returnImage
         });
@@ -2161,7 +2106,6 @@ app.post('/api/orders/return-request', async (req, res) => {
         const returnRequestsCollection = database.collection("ReturnRequests");
         const result = await returnRequestsCollection.insertOne(returnRequest);
 
-        console.log(`✅ Return request saved with ID: ${result.insertedId}`);
 
         // Create staff notification for new return request
         const staffNotificationsCollection = database.collection("StaffNotifications");
@@ -2212,10 +2156,10 @@ app.post('/api/orders/cancel-request', async (req, res) => {
             additionalComments
         } = req.body;
 
-        console.log('🚫 Processing cancellation request:', {
+        console.log('Return request data:', {
             orderId,
             reason,
-            additionalComments: additionalComments?.substring(0, 50) + '...'
+            additionalComments: (additionalComments && additionalComments.substring(0, 50) + '...') || ''
         });
 
         if (!orderId || !reason) {
@@ -2282,7 +2226,6 @@ app.post('/api/orders/cancel-request', async (req, res) => {
         const cancellationRequestsCollection = database.collection("CancellationRequests");
         const result = await cancellationRequestsCollection.insertOne(cancellationRequest);
 
-        console.log(`✅ Cancellation request saved with ID: ${result.insertedId}`);
 
         // Create staff notification for new cancellation request
         const staffNotificationsCollection = database.collection("StaffNotifications");
@@ -2325,7 +2268,6 @@ app.post('/api/orders/cancel-request', async (req, res) => {
 // API endpoint to get return requests for staff review
 app.get('/api/orders/return-requests', async (req, res) => {
     try {
-        console.log('📋 Fetching return requests for staff review');
 
         const database = client.db("MyProductsDb");
         const returnRequestsCollection = database.collection("ReturnRequests");
@@ -2334,7 +2276,6 @@ app.get('/api/orders/return-requests', async (req, res) => {
             .sort({ submittedAt: -1 })
             .toArray();
 
-        console.log(`✅ Found ${returnRequests.length} return requests`);
 
         res.json({
             success: true,
@@ -2355,7 +2296,6 @@ app.get('/api/orders/return-requests', async (req, res) => {
 // API endpoint to get cancellation requests for staff review
 app.get('/api/orders/cancellation-requests', async (req, res) => {
     try {
-        console.log('📋 Fetching cancellation requests for staff review');
 
         const database = client.db("MyProductsDb");
         const cancellationRequestsCollection = database.collection("CancellationRequests");
@@ -2364,7 +2304,6 @@ app.get('/api/orders/cancellation-requests', async (req, res) => {
             .sort({ submittedAt: -1 })
             .toArray();
 
-        console.log(`✅ Found ${cancellationRequests.length} cancellation requests`);
 
         res.json({
             success: true,
@@ -2389,7 +2328,6 @@ app.put('/api/orders/return-request/:requestId', async (req, res) => {
         const { requestId } = req.params;
         const { action, staffNotes } = req.body; // action: 'approve' or 'reject'
 
-        console.log(`🔄 Processing return request ${requestId} with action: ${action}`);
 
         if (!['approve', 'reject'].includes(action)) {
             return res.status(400).json({
@@ -2454,13 +2392,11 @@ app.put('/api/orders/return-request/:requestId', async (req, res) => {
                     // Remove from original collection
                     await collection.deleteOne({ _id: new ObjectId(returnRequest.originalOrderId) });
 
-                    console.log(`✅ Order moved to ReturnedOrders collection`);
                     break;
                 }
             }
         }
 
-        console.log(`✅ Return request ${requestId} ${action}d successfully`);
 
         res.json({
             success: true,
@@ -2485,7 +2421,6 @@ app.put('/api/orders/cancellation-request/:requestId', async (req, res) => {
         const { requestId } = req.params;
         const { action, staffNotes } = req.body; // action: 'approve' or 'reject'
 
-        console.log(`🔄 Processing cancellation request ${requestId} with action: ${action}`);
 
         if (!['approve', 'reject'].includes(action)) {
             return res.status(400).json({
@@ -2548,13 +2483,11 @@ app.put('/api/orders/cancellation-request/:requestId', async (req, res) => {
                     // Remove from original collection
                     await collection.deleteOne({ _id: new ObjectId(cancellationRequest.originalOrderId) });
 
-                    console.log(`✅ Order moved to CancelledOrders collection`);
                     break;
                 }
             }
         }
 
-        console.log(`✅ Cancellation request ${requestId} ${action}d successfully`);
 
         res.json({
             success: true,
@@ -2699,7 +2632,6 @@ app.post('/api/auth/create-verification-code', async (req, res) => {
         const result = await authCodesCollection.insertOne(codeEntry);
         
         if (result.insertedId) {
-            console.log(`✅ Verification code saved to AuthCodes collection for ${email}`);
             
             res.json({ 
                 success: true, 
@@ -2736,12 +2668,13 @@ app.post('/api/auth/send-verification-email', async (req, res) => {
         }
         
         console.log(`📧 Sending verification email via n8n for ${email}`);
-        console.log(`📊 Data being sent to n8n:`, {
+        
+        const emailData = {
             to: email,
             verificationCode: finalCode,
             userName: userName || '',
             type: 'verification'
-        });
+        };
         
         // Send email via n8n webhook
         const n8nResponse = await fetch('http://localhost:5678/webhook/send-verification-email', {
@@ -2763,7 +2696,6 @@ app.post('/api/auth/send-verification-email', async (req, res) => {
         }
         
         const n8nResult = await n8nResponse.json();
-        console.log('✅ Email sent successfully via n8n:', n8nResult);
         
         res.json({ 
             success: true, 
@@ -2862,7 +2794,6 @@ app.post('/api/auth/verify-code', async (req, res) => {
             }
         );
         
-        console.log(`✅ Verification code verified successfully for ${email}`);
         
         res.json({ 
             success: true, 
@@ -2940,7 +2871,6 @@ app.post('/api/auth/invalidate-codes', async (req, res) => {
             }
         );
         
-        console.log(`✅ Invalidated ${result.modifiedCount} verification codes for ${email}`);
         
         res.json({ 
             success: true, 
@@ -3012,7 +2942,6 @@ app.post('/api/auth/complete-registration', async (req, res) => {
             );
             
             // Log successful registration
-            console.log(`✅ New user registered and verified: ${userCredentials.email} at ${new Date().toISOString()}`);
             
             // Return success response
             res.status(201).json({
@@ -3046,6 +2975,7 @@ app.post('/api/auth/login', async (req, res) => {
     try {
         const { email, password } = req.body;
         
+        // Input validation and sanitization
         if (!email || !password) {
             return res.status(400).json({ 
                 success: false, 
@@ -3053,11 +2983,32 @@ app.post('/api/auth/login', async (req, res) => {
             });
         }
         
+        // Sanitize inputs
+        const sanitizedEmail = String(email).trim().toLowerCase();
+        const sanitizedPassword = String(password).trim();
+        
+        // Validate email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(sanitizedEmail)) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Invalid email format' 
+            });
+        }
+        
+        // Validate password length
+        if (sanitizedPassword.length < 6 || sanitizedPassword.length > 128) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Invalid password format' 
+            });
+        }
+        
         const db = await connectToDatabase();
         
         // Find user in UserCredentials collection
         const user = await db.collection('UserCredentials').findOne({ 
-            email: email.toLowerCase() 
+            email: sanitizedEmail 
         });
         
         if (!user) {
@@ -3076,7 +3027,7 @@ app.post('/api/auth/login', async (req, res) => {
         }
         
         // Verify password
-        const passwordMatch = await bcrypt.compare(password, user.password);
+        const passwordMatch = await bcrypt.compare(sanitizedPassword, user.password);
         
         if (!passwordMatch) {
             return res.status(401).json({ 
@@ -3104,20 +3055,25 @@ app.post('/api/auth/login', async (req, res) => {
             }
         );
         
-        // Generate JWT token
+        // Generate JWT token with strong secret
+        const jwtSecret = process.env.JWT_SECRET || 'your-super-secure-jwt-secret-key-here-change-this-in-production-123456789012345678901234567890';
         const token = jwt.sign(
             { 
                 userId: user._id, 
                 email: user.email,
                 fullName: user.fullName,
-                verified: user.emailVerified
+                verified: user.emailVerified,
+                iat: Math.floor(Date.now() / 1000)
             },
-            process.env.JWT_SECRET || 'your-secret-key',
-            { expiresIn: '7d' }
+            jwtSecret,
+            { 
+                expiresIn: '7d',
+                issuer: 'sanrico-mercantile',
+                audience: 'sanrico-users'
+            }
         );
         
         // Log successful login
-        console.log(`✅ User logged in: ${user.email} at ${new Date().toISOString()}`);
         
         // Return success response (don't include password)
         res.json({
@@ -3157,7 +3113,6 @@ app.get('/api/staff/notifications', async (req, res) => {
             .sort({ createdAt: -1 })
             .toArray();
 
-        console.log(`✅ Found ${notifications.length} unread staff notifications`);
 
         res.json({
             success: true,
@@ -3198,7 +3153,6 @@ app.put('/api/staff/notifications/:notificationId/read', async (req, res) => {
             });
         }
 
-        console.log(`✅ Notification ${notificationId} marked as read`);
 
         res.json({
             success: true,
@@ -3218,7 +3172,6 @@ app.put('/api/staff/notifications/:notificationId/read', async (req, res) => {
 // API endpoint to get all staff notifications (for history)
 app.get('/api/staff/notifications/all', async (req, res) => {
     try {
-        console.log('📋 Fetching all staff notifications');
 
         const database = client.db("MyProductsDb");
         const staffNotificationsCollection = database.collection("StaffNotifications");
@@ -3229,7 +3182,6 @@ app.get('/api/staff/notifications/all', async (req, res) => {
             .limit(100) // Limit to last 100 notifications
             .toArray();
 
-        console.log(`✅ Found ${notifications.length} total staff notifications`);
 
         res.json({
             success: true,

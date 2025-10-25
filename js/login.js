@@ -410,9 +410,7 @@ function formatPHPPrice(price) {
                     // Give a small delay to ensure localStorage operations are complete
                     setTimeout(() => {
                         const currentUser = Auth.getCurrentUser();
-                        if (currentUser.isCashier) {
-                            window.location.href = 'cashier.html';
-                        } else if (currentUser.isStaff) {
+                        if (currentUser.isStaff) {
                             window.location.href = 'staff-dashboard.html';
                         }
                     }, 500);
@@ -1004,15 +1002,13 @@ function updateAccountButton() {
     if (Auth.isLoggedIn()) {
         const currentUser = Auth.getCurrentUser();
         newBtn.addEventListener('click', () => {
-            if (currentUser.isCashier) {
-                window.location.href = 'cashier.html';
-            } else if (currentUser.isStaff) {
+            if (currentUser.isStaff) {
                 window.location.href = 'staff-dashboard.html';
             } else {
                 window.location.href = 'profile.html';
             }
         });
-        newBtn.textContent = currentUser.isCashier ? 'Cashier POS' : currentUser.isStaff ? 'Staff Dashboard' : 'My Account';
+        newBtn.textContent = currentUser.isStaff ? 'Staff Dashboard' : 'My Account';
     } else {
         newBtn.textContent = 'Log In';
         newBtn.addEventListener('click', () => {
@@ -1026,7 +1022,7 @@ function updateAccountButton() {
     const cartBtn = document.getElementById('cartBtn');
     if (cartBtn) {
         const currentUser = Auth.getCurrentUser();
-        if (Auth.isLoggedIn() && !currentUser.isStaff && !currentUser.isCashier) {
+        if (Auth.isLoggedIn() && !currentUser.isStaff) {
             cartBtn.classList.remove('hidden');
             Auth.updateCartCount();
         } else {

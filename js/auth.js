@@ -92,11 +92,10 @@ class Auth {
                 // Create user object from MongoDB response
                 const staffUser = {
                     id: result.user._id,
-                    fullName: result.user.username === 'staff' ? 'Staff Member' : 'Cashier Member',
+                    fullName: 'Staff Member',
                     username: result.user.username,
                     staffId: result.user.username,
                     isStaff: result.user.isStaff,
-                    isCashier: result.user.isCashier,
                     isAdmin: result.user.isAdmin,
                     createdAt: new Date().toISOString()
                 };
@@ -142,7 +141,7 @@ class Auth {
         localStorage.setItem('currentUser', JSON.stringify(user));
         
         // If this is a staff user, also set a backup flag
-        if (user && (user.isStaff || user.isCashier)) {
+        if (user && user.isStaff) {
             localStorage.setItem('staffAuth', 'true');
         }
     }
@@ -518,10 +517,7 @@ class Auth {
     static redirectIfStaff() {
         if (this.isLoggedIn()) {
             const currentUser = this.getCurrentUser();
-            if (currentUser.isCashier && !window.location.href.includes('cashier.html')) {
-                window.location.href = 'cashier.html';
-                return true;
-            } else if (currentUser.isStaff && !window.location.href.includes('staff-dashboard.html')) {
+            if (currentUser.isStaff && !window.location.href.includes('staff-dashboard.html')) {
                 window.location.href = 'staff-dashboard.html';
                 return true;
             }
@@ -752,30 +748,28 @@ function updateAccountButton() {
     const newBtn = loginBtn.cloneNode(true);
     loginBtn.parentNode.replaceChild(newBtn, loginBtn);
 
-    if (currentUser) {
-        // Logged in state - show username instead of full name
-        const displayName = currentUser.username || currentUser.fullName;
-        newBtn.innerHTML = `
-            <span class="profile-icon">👤</span>
-            ${displayName}
-        `;
-        newBtn.onclick = () => {
-            if (currentUser.isCashier) {
-                window.location.href = 'cashier.html';
-            } else if (currentUser.isStaff) {
-                window.location.href = 'staff-dashboard.html';
-            } else {
-                window.location.href = 'profile.html';
+        if (currentUser) {
+            // Logged in state - show username instead of full name
+            const displayName = currentUser.username || currentUser.fullName;
+            newBtn.innerHTML = `
+                <span class="profile-icon">👤</span>
+                ${displayName}
+            `;
+            newBtn.onclick = () => {
+                if (currentUser.isStaff) {
+                    window.location.href = 'staff-dashboard.html';
+                } else {
+                    window.location.href = 'profile.html';
+                }
+            };
+            if (cartBtn) {
+                if (currentUser.isStaff) {
+                    cartBtn.classList.add('hidden');
+                } else {
+                    cartBtn.classList.remove('hidden');
+                    Auth.updateCartCount();
+                }
             }
-        };
-        if (cartBtn) {
-            if (currentUser.isStaff || currentUser.isCashier) {
-                cartBtn.classList.add('hidden');
-            } else {
-                cartBtn.classList.remove('hidden');
-                Auth.updateCartCount();
-            }
-        }
     } else {
         // Logged out state
         newBtn.innerHTML = `
