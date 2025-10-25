@@ -1403,7 +1403,7 @@
                 </div>
 
                 <!-- Orders Tab Content -->
-                <div class="tab-content" id="ordersTabContent">
+                <div class="tab-content" id="ordersTabContent" style="display: block;">
                     <div class="orders-table-container">
                         <table class="orders-table" id="ordersTable">
                         <thead>
@@ -2008,6 +2008,32 @@
                 this.updateNotifications();
                 this.setDefaultDates();
                 this.initializePOSSearchDropdown();
+                
+                // Ensure orders tab is visible by default
+                setTimeout(() => {
+                    this.initializeTabs();
+                }, 100);
+            }
+
+            initializeTabs() {
+                console.log('🔄 Initializing tabs...');
+                // Ensure orders tab is active by default
+                const ordersTabBtn = document.getElementById('ordersTabBtn');
+                const returnsTabBtn = document.getElementById('returnsTabBtn');
+                const ordersTabContent = document.getElementById('ordersTabContent');
+                const returnsTabContent = document.getElementById('returnsTabContent');
+                
+                if (ordersTabBtn && ordersTabContent) {
+                    ordersTabBtn.classList.add('active');
+                    ordersTabContent.style.display = 'block';
+                    console.log('✅ Orders tab initialized');
+                }
+                
+                if (returnsTabBtn && returnsTabContent) {
+                    returnsTabBtn.classList.remove('active');
+                    returnsTabContent.style.display = 'none';
+                    console.log('✅ Returns tab hidden');
+                }
             }
 
             setDefaultDates() {
@@ -2466,6 +2492,7 @@
                         return;
                     }
                     if (this.currentSection === 'orders') {
+                        console.log('🔄 Loading data for orders section');
                         await this.loadOrders(); // This now also loads returns
                         this.renderCurrentSection();
                         Promise.allSettled([
@@ -2656,17 +2683,20 @@
 
             async loadOrders() {
                 try {
+                    console.log('🔄 loadOrders() called');
                     // Use cached orders if available
                     if (this._cache.orders && this._cache.orders.length > 0) {
+                        console.log('📊 Using cached orders:', this._cache.orders.length);
                         this.orders = this._cache.orders;
                     } else {
-                        console.log('🔄 Loading orders...');
+                        console.log('🔄 Loading orders from API...');
                         // Fetch orders from all collections (pending, accepted, delivered)
                         const response = await fetch('http://localhost:3000/api/orders/all-staff');
                         
                         if (!response.ok) throw new Error('Failed to fetch orders');
 
                         this.orders = await response.json();
+                        console.log('📊 Orders loaded from API:', this.orders.length);
                         
                         // Cache the orders
                         this._cache.orders = this.orders;
@@ -2705,12 +2735,15 @@
 
             async loadReturns() {
                 try {
+                    console.log('🔄 loadReturns() called');
                     // Use cached returns if available
                     if (this._cache.returns && this._cache.returns.length > 0) {
+                        console.log('📦 Using cached returns:', this._cache.returns.length);
                         this.returns = this._cache.returns;
                         return;
                     }
 
+                    console.log('🔄 Loading returns from API...');
                     // Fetch return requests for staff review
                     const response = await fetch('http://localhost:3000/api/orders/return-requests');
                     if (!response.ok) throw new Error('Failed to fetch return requests');
@@ -3482,9 +3515,11 @@
                 // Render the appropriate content
                 if (tab === 'orders') {
                     console.log('🔄 Rendering orders...');
+                    console.log('📊 Orders data before render:', this.orders);
                     this.renderOrders();
                 } else if (tab === 'returns') {
                     console.log('🔄 Rendering returns...');
+                    console.log('📦 Returns data before render:', this.returns);
                     this.renderReturns();
                 }
             }
@@ -3495,10 +3530,37 @@
                     this.showLoadingProducts();
                     this.renderProducts();
                 } else if (this.currentSection === 'orders') {
+                    console.log('🔄 Rendering orders section');
                     this.showLoadingOrders();
                     // Ensure orders tab is active by default
                     this.switchTab('orders');
+                    // Force show orders tab content immediately
+                    const ordersTabContent = document.getElementById('ordersTabContent');
+                    const ordersTableContainer = document.querySelector('.orders-table-container');
+                    const ordersTable = document.getElementById('ordersTable');
+                    
+                    if (ordersTabContent) {
+                        ordersTabContent.style.display = 'block';
+                        console.log('✅ Orders tab content forced to display');
+                    }
+                    
+                    if (ordersTableContainer) {
+                        ordersTableContainer.style.display = 'block';
+                        ordersTableContainer.style.visibility = 'visible';
+                        console.log('✅ Orders table container forced to display');
+                    }
+                    
+                    if (ordersTable) {
+                        ordersTable.style.display = 'table';
+                        ordersTable.style.visibility = 'visible';
+                        console.log('✅ Orders table forced to display');
+                    }
+                    // Force render orders after tab switch
+                    setTimeout(() => {
+                        this.renderOrders();
+                    }, 100);
                 } else if (this.currentSection === 'returns') {
+                    console.log('🔄 Rendering returns section');
                     this.showLoadingReturns();
                     this.renderReturns();
                 } else if (this.currentSection === 'dashboard') {
@@ -3667,11 +3729,27 @@
             }
 
             renderOrders() {
+                console.log('🔄 renderOrders() called');
                 const tbody = document.getElementById('ordersTableBody');
                 if (!tbody) {
                     console.error('❌ ordersTableBody element not found');
                     return;
                 }
+                
+                // Force show table content immediately for testing
+                console.log('🔄 Forcing table content display...');
+                tbody.style.display = 'table-row-group';
+                tbody.style.visibility = 'visible';
+                
+                // Force show some test content immediately
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="9" style="text-align: center; padding: 2rem; background: #f8f9fa; border: 2px dashed #dee2e6;">
+                            <div style="font-size: 1.2rem; color: #495057; margin-bottom: 1rem;">🔄 Loading Orders...</div>
+                            <div style="font-size: 0.9rem; color: #6c757d;">This is a test to verify table visibility</div>
+                        </td>
+                    </tr>
+                `;
                 
                 const statusFilter = document.getElementById('orderStatusFilter').value;
                 const paymentFilter = document.getElementById('paymentMethodFilter').value;
@@ -3680,6 +3758,7 @@
                 
                 console.log('🔍 Rendering orders with filter:', statusFilter);
                 console.log('📊 Total orders before filtering:', this.orders ? this.orders.length : 0);
+                console.log('📊 Orders data:', this.orders);
                 
                 let filteredOrders = this.orders || [];
                 
@@ -3753,7 +3832,28 @@
 
                 if (displayed.length === 0) {
                     console.log('📊 No orders to display');
-                    tbody.innerHTML = '<tr><td colspan="9" class="no-data">No orders found</td></tr>';
+                    // Show sample data for testing if no real data
+                    if (this.orders.length === 0) {
+                        console.log('📊 No orders data available, showing sample data');
+                        tbody.innerHTML = `
+                            <tr>
+                                <td>ORD-001</td>
+                                <td>Sample Customer</td>
+                                <td>2 items</td>
+                                <td>₱1,500.00</td>
+                                <td>Cash on Delivery</td>
+                                <td>Delivery</td>
+                                <td>${new Date().toLocaleDateString()}</td>
+                                <td><span class="status-badge pending">Pending</span></td>
+                                <td><button class="action-btn small">View</button></td>
+                            </tr>
+                            <tr>
+                                <td colspan="9" class="no-data">This is sample data. Check console for data loading issues.</td>
+                            </tr>
+                        `;
+                    } else {
+                        tbody.innerHTML = '<tr><td colspan="9" class="no-data">No orders found</td></tr>';
+                    }
                     return;
                 }
 
@@ -3882,16 +3982,23 @@
             }
 
             renderReturns() {
+                console.log('🔄 renderReturns() called');
                 const tbody = document.getElementById('returnsTableBody');
                 if (!tbody) {
                     console.error('❌ returnsTableBody element not found');
                     return;
                 }
                 
+                // Force show table content immediately for testing
+                console.log('🔄 Forcing returns table content display...');
+                tbody.style.display = 'table-row-group';
+                tbody.style.visibility = 'visible';
+                
                 const statusFilter = document.getElementById('returnStatusFilter').value;
 
                 console.log('🔄 Rendering returns with filter:', statusFilter);
                 console.log('📦 Total returns available:', this.returns ? this.returns.length : 0);
+                console.log('📦 Returns data:', this.returns);
 
                 let filteredReturns = this.returns || [];
 
@@ -3910,7 +4017,27 @@
 
                 if (displayed.length === 0) {
                     console.log('📦 No returns to display');
-                    tbody.innerHTML = '<tr><td colspan="8" class="no-data">No return requests found</td></tr>';
+                    // Show sample data for testing if no real data
+                    if (this.returns.length === 0) {
+                        console.log('📦 No returns data available, showing sample data');
+                        tbody.innerHTML = `
+                            <tr>
+                                <td>ORD-001</td>
+                                <td>Sample Customer</td>
+                                <td><span class="return-type-badge">Return</span></td>
+                                <td>Product defect</td>
+                                <td>1 item</td>
+                                <td>${new Date().toLocaleDateString()}</td>
+                                <td><span class="status-badge pending">Pending</span></td>
+                                <td><button class="action-btn small">View</button></td>
+                            </tr>
+                            <tr>
+                                <td colspan="8" class="no-data">This is sample data. Check console for data loading issues.</td>
+                            </tr>
+                        `;
+                    } else {
+                        tbody.innerHTML = '<tr><td colspan="8" class="no-data">No return requests found</td></tr>';
+                    }
                     return;
                 }
 
