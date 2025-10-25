@@ -619,7 +619,9 @@
         }
 
         // Cart button redirect
-        document.getElementById('cartBtn').addEventListener('click', (e) => {
+        const cartBtn = document.getElementById('cartTabButton');
+        if (cartBtn) {
+            cartBtn.addEventListener('click', (e) => {
             e.preventDefault();
             if (!Auth.isLoggedIn()) {
                 showToast('Please log in to view your cart.');
@@ -627,10 +629,13 @@
             } else {
                 window.location.href = 'cart.html';
             }
-        });
+            });
+        }
 
         // Buy Now button functionality
-        document.getElementById('buyNowBtn').addEventListener('click', (e) => {
+        const buyNowBtn = document.getElementById('buyNowBtn');
+        if (buyNowBtn) {
+            buyNowBtn.addEventListener('click', (e) => {
             e.preventDefault();
             if (!Auth.isLoggedIn()) {
                 // User is not logged in, show login modal
@@ -656,7 +661,8 @@
                     }
                 }
             }
-        });
+            });
+        }
 
         // Helper function to get current product details
         function getCurrentProductDetails() {

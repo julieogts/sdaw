@@ -9,7 +9,7 @@ class LoginButton {
     }
 
     initialize() {
-        this.button = document.getElementById('loginBtn');
+        this.button = document.getElementById('topLoginBtn');
         if (!this.button) {
             console.warn('Login button not found');
             return;
@@ -19,9 +19,10 @@ class LoginButton {
 
     init() {
         // Create new button with proper structure
-        const newBtn = document.createElement('button');
-        newBtn.id = 'loginBtn';
+        const newBtn = document.createElement('a');
+        newBtn.id = 'topLoginBtn';
         newBtn.className = 'account-btn';
+        newBtn.href = '#';
 
         // Create profile icon span
         const profileIcon = document.createElement('span');

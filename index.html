@@ -40,7 +40,9 @@
                     dummy.style.display = 'none';
                     dummy.addEventListener = function() { return; };
                     dummy.value = '';
-                    document.body.appendChild(dummy);
+                    if (document.body) {
+                        document.body.appendChild(dummy);
+                    }
                 }
             });
         })();
@@ -181,7 +183,6 @@
         })();
     </script>
     <script src="js/shop.js"></script>
-    <script src="js/shop-fix.js"></script>
     <script src="js/stockDisplay.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/2.0.2/anime.min.js"></script>
     
