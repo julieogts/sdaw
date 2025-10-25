@@ -1102,8 +1102,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (result.success) {
                     // Store auth token
                     localStorage.setItem('auth_token', result.token);
-                    
-                    showToast(`Welcome back, ${result.user.fullName || result.user.email}!`, 'success');
+
+                    showToast(`Login successful! Welcome back, ${result.user.fullName || result.user.email}!`, 'success');
             
             // Close login modal
                     window.closeAllModals();
@@ -1219,7 +1219,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Store auth token
                     localStorage.setItem('auth_token', result.token);
                     
-                    showToast(`Welcome back, ${result.user.fullName || result.user.name}!`, 'success');
+                    showToast(`Login successful! Welcome back, ${result.user.fullName || result.user.name}!`, 'success');
                     
                     // Close login modal
                     window.closeAllModals();
