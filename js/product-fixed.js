@@ -145,10 +145,11 @@ async function loadProductDetails() {
                 stock: product.stockQuantity
             };
             
-            // Display stock amount next to quantity controls
-            const stockAmountDisplay = document.getElementById('stockAmountDisplay');
-            if (stockAmountDisplay) {
-                stockAmountDisplay.textContent = `Stock: ${product.stockQuantity}`;
+
+            // Update the stock count in the top banner
+            const stockCount = document.getElementById('stockCount');
+            if (stockCount) {
+                stockCount.textContent = `(${product.stockQuantity} available)`;
             }
             
             // Load related products from the same category

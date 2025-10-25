@@ -245,6 +245,76 @@
             overflow-y: auto;
         }
 
+        /* Tab Navigation Styles */
+        .tab-navigation {
+            display: flex;
+            gap: 0.5rem;
+            margin: 1rem 0;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .tab-btn:hover {
+            color: #333;
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .tab-btn.active {
+            color: #e63946;
+            border-bottom-color: #e63946;
+            background: rgba(230, 57, 70, 0.1);
+        }
+
+        .tab-badge {
+            background: #e63946;
+            color: white;
+            border-radius: 12px;
+            padding: 0.2rem 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            min-width: 20px;
+            text-align: center;
+        }
+
+        .tab-btn.active .tab-badge {
+            background: #c82333;
+        }
+
+        .tab-content {
+            display: block;
+        }
+
+        .tab-content.hidden {
+            display: none;
+        }
+
+        /* Returns filters styling */
+        .returns-filters {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            align-items: center;
+        }
+
+        .returns-filters .form-control {
+            flex: 1;
+            max-width: 200px;
+        }
+
         /* Compact Dashboard Header */
         .dashboard-header {
             padding: 1rem 1.5rem;
@@ -1136,11 +1206,6 @@
                         <span class="nav-text">Order Management</span>
                         <span class="nav-badge" id="ordersBadge">0</span>
                     </button>
-                    <button class="nav-item" data-section="returns" id="returnsNavButton" title="No return requests">
-                        <span class="nav-icon">↩️</span>
-                        <span class="nav-text">Returns & Exchanges</span>
-                        <span class="nav-badge" id="returnsBadge">0</span>
-                    </button>
                 </div>
                 <div class="nav-section">
                     <h3 class="nav-section-title">Point of Sale</h3>
@@ -1327,8 +1392,21 @@
                         </div>
                     </div>
                 </div>
-                <div class="orders-table-container">
-                    <table class="orders-table" id="ordersTable">
+                
+                <!-- Tab Navigation for Orders and Returns -->
+                <div class="tab-navigation">
+                    <button class="tab-btn active" data-tab="orders" id="ordersTabBtn">
+                        📋 Orders <span class="tab-badge" id="ordersTabBadge">0</span>
+                    </button>
+                    <button class="tab-btn" data-tab="returns" id="returnsTabBtn">
+                        ↩️ Returns <span class="tab-badge" id="returnsTabBadge">0</span>
+                    </button>
+                </div>
+
+                <!-- Orders Tab Content -->
+                <div class="tab-content" id="ordersTabContent">
+                    <div class="orders-table-container">
+                        <table class="orders-table" id="ordersTable">
                         <thead>
                             <tr>
                                 <th style="width: 12%;">Order ID</th>
@@ -1346,8 +1424,43 @@
                             <!-- Orders will be populated here -->
                         </tbody>
                     </table>
+                    </div>
+                    <div class="pagination" id="ordersPagination"></div>
                 </div>
-                <div class="pagination" id="ordersPagination"></div>
+
+                <!-- Returns Tab Content -->
+                <div class="tab-content" id="returnsTabContent" style="display: none;">
+                    <div class="returns-filters">
+                        <select id="returnStatusFilter" class="form-control">
+                            <option value="all">All Returns</option>
+                            <option value="pending_review">Pending Review</option>
+                            <option value="approved">Approved</option>
+                            <option value="rejected">Rejected</option>
+                            <option value="completed">Completed</option>
+                        </select>
+                        <button class="action-btn primary" id="refreshReturnsBtn">🔄 Refresh</button>
+                    </div>
+                    <div class="returns-table-container">
+                        <table class="returns-table" id="returnsTable">
+                            <thead>
+                                <tr>
+                                    <th>Order ID</th>
+                                    <th>Customer</th>
+                                    <th>Return Type</th>
+                                    <th>Reason</th>
+                                    <th>Items</th>
+                                    <th>Request Date</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="returnsTableBody">
+                                <!-- Return requests will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="pagination" id="returnsPagination"></div>
+                </div>
             </section>
 
             <!-- Cashier POS Section -->
@@ -1444,43 +1557,6 @@
                 </div>
             </section>
 
-            <!-- Returns & Exchanges Section -->
-            <section class="content-section" id="returns-section">
-                <div class="section-header">
-                    <h1>Returns & Exchanges</h1>
-                    <div class="section-controls">
-                        <select id="returnStatusFilter" class="form-control">
-                            <option value="all">All Returns</option>
-                            <option value="pending">Pending Review</option>
-                            <option value="approved">Approved</option>
-                            <option value="rejected">Rejected</option>
-                            <option value="completed">Completed</option>
-                        </select>
-                        <button class="action-btn primary" id="refreshReturnsBtn">🔄 Refresh</button>
-                    </div>
-                </div>
-
-                <div class="returns-table-container">
-                    <table class="returns-table" id="returnsTable">
-                        <thead>
-                            <tr>
-                                <th>Order ID</th>
-                                <th>Customer</th>
-                                <th>Return Type</th>
-                                <th>Reason</th>
-                                <th>Items</th>
-                                <th>Request Date</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="returnsTableBody">
-                            <!-- Return requests will be populated here -->
-                        </tbody>
-                    </table>
-                </div>
-                <div class="pagination" id="returnsPagination"></div>
-            </section>
         </main>
     </div>
 
@@ -2247,7 +2323,7 @@
             async loadDashboardData() {
                 try {
                     // PHASE 1: Try to use cached data first (INSTANT)
-                    if (this._cache.products && this._cache.orders && this._cache.products.length > 0 && this._cache.orders.length >= 0) {
+                    if (this._cache.products && this._cache.orders && this._cache.products.length > 0 && this._cache.orders.length > 0) {
                         this.products = this._cache.products;
                         this.orders = this._cache.orders;
                         this.calculateStatsFromLoadedData();
@@ -2391,21 +2467,10 @@
                         return;
                     }
                     if (this.currentSection === 'orders') {
-                        await this.loadOrders();
+                        await this.loadOrders(); // This now also loads returns
                         this.renderCurrentSection();
                         Promise.allSettled([
                             this.loadProducts(),
-                            this.loadReturns(),
-                            this.loadComprehensiveStats()
-                        ]).then(() => { this.updateStats(); });
-                        return;
-                    }
-                    if (this.currentSection === 'returns') {
-                        await this.loadReturns();
-                        this.renderCurrentSection();
-                        Promise.allSettled([
-                            this.loadProducts(),
-                            this.loadOrders(),
                             this.loadComprehensiveStats()
                         ]).then(() => { this.updateStats(); });
                         return;
@@ -2593,24 +2658,46 @@
             async loadOrders() {
                 try {
                     // Use cached orders if available
-                    if (this._cache.orders && this._cache.orders.length >= 0) {
+                    if (this._cache.orders && this._cache.orders.length > 0) {
                         this.orders = this._cache.orders;
-                        return;
+                    } else {
+                        console.log('🔄 Loading orders...');
+                        // Fetch orders from all collections (pending, accepted, delivered)
+                        const response = await fetch('http://localhost:3000/api/orders/all-staff');
+                        
+                        if (!response.ok) throw new Error('Failed to fetch orders');
+
+                        this.orders = await response.json();
+                        
+                        // Cache the orders
+                        this._cache.orders = this.orders;
+                        this._cache.timestamp = Date.now();
                     }
 
-                    console.log('🔄 Loading orders...');
-                    // Fetch orders from all collections (pending, accepted, delivered)
-                    const response = await fetch('http://localhost:3000/api/orders/all-staff');
-                    
-                    if (!response.ok) throw new Error('Failed to fetch orders');
+                    // Update orders badge
+                    const ordersBadge = document.getElementById('ordersBadge');
+                    const pendingOrders = this.orders.filter(o => o.collection === 'pending').length;
+                    ordersBadge.textContent = pendingOrders;
 
-                    this.orders = await response.json();
-                    
-                    // Cache the orders
-                    this._cache.orders = this.orders;
-                    this._cache.timestamp = Date.now();
+                    // Update orders nav button title
+                    const ordersNavButton = document.getElementById('ordersNavButton');
+                    if (pendingOrders === 0) {
+                        ordersNavButton.title = 'No pending orders';
+                    } else {
+                        ordersNavButton.title = `${pendingOrders} pending order${pendingOrders > 1 ? 's' : ''}`;
+                    }
+
+                    // Update tab badges
+                    const ordersTabBadge = document.getElementById('ordersTabBadge');
+                    if (ordersTabBadge) {
+                        ordersTabBadge.textContent = pendingOrders;
+                    }
 
                     this.checkForNewOrders();
+
+                    // Load returns at the same time
+                    await this.loadReturns();
+
                 } catch (error) {
                     console.error('Error loading orders:', error);
                     this.orders = [];
@@ -2620,7 +2707,7 @@
             async loadReturns() {
                 try {
                     // Use cached returns if available
-                    if (this._cache.returns && this._cache.returns.length >= 0) {
+                    if (this._cache.returns && this._cache.returns.length > 0) {
                         this.returns = this._cache.returns;
                         return;
                     }
@@ -2629,22 +2716,31 @@
                     const response = await fetch('http://localhost:3000/api/orders/return-requests');
                     if (!response.ok) throw new Error('Failed to fetch return requests');
 
-                    this.returns = await response.json();
+                    const data = await response.json();
+                    console.log('📦 Returns API response:', data);
+                    this.returns = data.returnRequests || [];
+                    console.log('📦 Processed returns:', this.returns);
                     
                     // Cache the returns
                     this._cache.returns = this.returns;
 
                     // Update returns badge
                     const returnsBadge = document.getElementById('returnsBadge');
-                    const pendingReturns = this.returns.filter(r => r.status === 'pending').length;
-                    returnsBadge.textContent = pendingReturns;
+                    const pendingReturns = this.returns ? this.returns.filter(r => r.status === 'pending_review').length : 0;
+                    if (returnsBadge) {
+                        returnsBadge.textContent = pendingReturns;
+                    }
 
-                    // Update returns nav button title
-                    const returnsNavButton = document.getElementById('returnsNavButton');
-                    if (pendingReturns === 0) {
-                        returnsNavButton.title = 'No return requests';
-                    } else {
-                        returnsNavButton.title = `${pendingReturns} return request${pendingReturns > 1 ? 's' : ''}`;
+
+                    // Update tab badges
+                    const ordersTabBadge = document.getElementById('ordersTabBadge');
+                    const returnsTabBadge = document.getElementById('returnsTabBadge');
+                    if (ordersTabBadge) {
+                        const pendingOrders = this.orders ? this.orders.filter(o => o.collection === 'pending').length : 0;
+                        ordersTabBadge.textContent = pendingOrders;
+                    }
+                    if (returnsTabBadge) {
+                        returnsTabBadge.textContent = pendingReturns;
                     }
 
                 } catch (error) {
@@ -3062,12 +3158,26 @@
                     this.renderOrders();
                 });
 
+                // Tab switching functionality
+                document.getElementById('ordersTabBtn').addEventListener('click', () => {
+                    this.switchTab('orders');
+                });
+
+                document.getElementById('returnsTabBtn').addEventListener('click', () => {
+                    this.switchTab('returns');
+                });
+
                 // Returns refresh functionality
                 document.getElementById('refreshReturnsBtn').addEventListener('click', async () => {
                     this.showLoadingReturns();
                     await this.loadReturns();
                     this.renderReturns();
                     showToast('Returns refreshed', 'success');
+                });
+
+                // Returns filter functionality
+                document.getElementById('returnStatusFilter').addEventListener('change', () => {
+                    this.renderReturns();
                 });
 
                 // Date dropdown functionality
@@ -3344,6 +3454,42 @@
                 this.renderCurrentSection();
             }
 
+            switchTab(tab) {
+                console.log('🔄 Switching to tab:', tab);
+                
+                // Update tab buttons
+                document.querySelectorAll('.tab-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                const activeTabBtn = document.querySelector(`[data-tab="${tab}"]`);
+                if (activeTabBtn) {
+                    activeTabBtn.classList.add('active');
+                } else {
+                    console.error('❌ Tab button not found:', tab);
+                }
+
+                // Update tab content
+                document.querySelectorAll('.tab-content').forEach(content => {
+                    content.style.display = 'none';
+                });
+                const activeTabContent = document.getElementById(`${tab}TabContent`);
+                if (activeTabContent) {
+                    activeTabContent.style.display = 'block';
+                    console.log('✅ Tab content displayed:', tab);
+                } else {
+                    console.error('❌ Tab content not found:', `${tab}TabContent`);
+                }
+
+                // Render the appropriate content
+                if (tab === 'orders') {
+                    console.log('🔄 Rendering orders...');
+                    this.renderOrders();
+                } else if (tab === 'returns') {
+                    console.log('🔄 Rendering returns...');
+                    this.renderReturns();
+                }
+            }
+
             renderCurrentSection() {
                 // Show brief loading when switching sections
                 if (this.currentSection === 'products') {
@@ -3351,7 +3497,8 @@
                     this.renderProducts();
                 } else if (this.currentSection === 'orders') {
                     this.showLoadingOrders();
-                    this.renderOrders();
+                    // Ensure orders tab is active by default
+                    this.switchTab('orders');
                 } else if (this.currentSection === 'returns') {
                     this.showLoadingReturns();
                     this.renderReturns();
@@ -3522,15 +3669,20 @@
 
             renderOrders() {
                 const tbody = document.getElementById('ordersTableBody');
+                if (!tbody) {
+                    console.error('❌ ordersTableBody element not found');
+                    return;
+                }
+                
                 const statusFilter = document.getElementById('orderStatusFilter').value;
                 const paymentFilter = document.getElementById('paymentMethodFilter').value;
                 const startDate = document.getElementById('orderStartDate').value;
                 const endDate = document.getElementById('orderEndDate').value;
                 
                 console.log('🔍 Rendering orders with filter:', statusFilter);
-                console.log('📊 Total orders before filtering:', this.orders.length);
+                console.log('📊 Total orders before filtering:', this.orders ? this.orders.length : 0);
                 
-                let filteredOrders = this.orders;
+                let filteredOrders = this.orders || [];
                 
                 // Filter by search query first
                 const searchQuery = document.getElementById('orderSearch').value.toLowerCase().trim();
@@ -3601,9 +3753,12 @@
                 const displayed = filteredOrders.slice(start, end);
 
                 if (displayed.length === 0) {
+                    console.log('📊 No orders to display');
                     tbody.innerHTML = '<tr><td colspan="9" class="no-data">No orders found</td></tr>';
                     return;
                 }
+
+                console.log('📊 Rendering', displayed.length, 'orders');
 
                 tbody.innerHTML = displayed.map(order => {
                     // Determine the correct status display based on collection and status
@@ -3729,12 +3884,17 @@
 
             renderReturns() {
                 const tbody = document.getElementById('returnsTableBody');
+                if (!tbody) {
+                    console.error('❌ returnsTableBody element not found');
+                    return;
+                }
+                
                 const statusFilter = document.getElementById('returnStatusFilter').value;
 
                 console.log('🔄 Rendering returns with filter:', statusFilter);
-                console.log('📦 Total returns available:', this.returns.length);
+                console.log('📦 Total returns available:', this.returns ? this.returns.length : 0);
 
-                let filteredReturns = this.returns;
+                let filteredReturns = this.returns || [];
 
                 // Filter by status
                 if (statusFilter !== 'all') {
@@ -3750,9 +3910,12 @@
                 const displayed = filteredReturns.slice(start, end);
 
                 if (displayed.length === 0) {
+                    console.log('📦 No returns to display');
                     tbody.innerHTML = '<tr><td colspan="8" class="no-data">No return requests found</td></tr>';
                     return;
                 }
+
+                console.log('📦 Rendering', displayed.length, 'returns');
 
                 tbody.innerHTML = displayed.map(returnRequest => {
                     const orderNumber = returnRequest.orderNumber || this.generateOrderNumber(returnRequest);

@@ -737,6 +737,32 @@ app.get('/api/orders/all-staff', async (req, res) => {
     }
 });
 
+// API endpoint to get return requests for staff review
+app.get('/api/orders/return-requests', async (req, res) => {
+    try {
+        const database = client.db("MyProductsDb");
+        const returnRequestsCollection = database.collection("ReturnRequests");
+
+        const returnRequests = await returnRequestsCollection.find({})
+            .sort({ submittedAt: -1 })
+            .toArray();
+
+        res.json({
+            success: true,
+            count: returnRequests.length,
+            returnRequests: returnRequests
+        });
+
+    } catch (error) {
+        console.error("❌ Error fetching return requests:", error);
+        res.status(500).json({
+            success: false,
+            message: "Failed to fetch return requests",
+            error: error.message
+        });
+    }
+});
+
 // API endpoint to get all user orders from all three collections
 app.get('/api/orders/:userId', async (req, res) => {
     try {
@@ -2265,33 +2291,6 @@ app.post('/api/orders/cancel-request', async (req, res) => {
     }
 });
 
-// API endpoint to get return requests for staff review
-app.get('/api/orders/return-requests', async (req, res) => {
-    try {
-
-        const database = client.db("MyProductsDb");
-        const returnRequestsCollection = database.collection("ReturnRequests");
-
-        const returnRequests = await returnRequestsCollection.find({})
-            .sort({ submittedAt: -1 })
-            .toArray();
-
-
-        res.json({
-            success: true,
-            count: returnRequests.length,
-            returnRequests: returnRequests
-        });
-
-    } catch (error) {
-        console.error("❌ Error fetching return requests:", error);
-        res.status(500).json({
-            success: false,
-            message: "Failed to fetch return requests",
-            error: error.message
-        });
-    }
-});
 
 // API endpoint to get cancellation requests for staff review
 app.get('/api/orders/cancellation-requests', async (req, res) => {

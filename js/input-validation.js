@@ -79,16 +79,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 e.preventDefault();
             }
         });
-    });
-});
+            });
+        });
 
 // Show field error
 function showFieldError(field, message) {
     clearFieldError(field);
     
-    const errorDiv = document.createElement('div');
-    errorDiv.className = 'field-error';
-    errorDiv.textContent = message;
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'field-error';
+        errorDiv.textContent = message;
     errorDiv.style.color = '#dc3545';
     errorDiv.style.fontSize = '0.875rem';
     errorDiv.style.marginTop = '0.25rem';

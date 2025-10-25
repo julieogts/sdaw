@@ -210,14 +210,16 @@
                     </div>
                 </div>
 
-                <!-- Brand Selection Section -->
+                <!-- Product Category and ID Section -->
                 <div class="product-filters-section">
                     <div class="product-filters">
-                        <div class="filter-group brand-group">
-                            <label for="brandSelect" class="filter-label">Brand:</label>
-                            <select id="brandSelect" class="filter-select">
-                                <option value="">Select brand</option>
-                            </select>
+                        <div class="filter-group category-group">
+                            <label class="filter-label">Category:</label>
+                            <a href="shop.html" id="productCategory" class="category-link">Electronics > Smartphones</a>
+                        </div>
+                        <div class="filter-group id-group">
+                            <label class="filter-label">Item ID:</label>
+                            <span class="id-value" id="productItemNumber">000000000000</span>
                         </div>
                     </div>
                 </div>
@@ -246,32 +248,8 @@
                         <i class="fa fa-circle stock-dot"></i>
                     </div>
                     <span class="stock-text">IN STOCK</span>
-                    <span class="stock-count" id="stockCount">(25 available)</span>
+                    <span class="stock-count" id="stockCount">(0 available)</span>
                 </div>
-
-                <!-- Enhanced Product Meta -->
-                <div class="product-meta">
-                    <div class="meta-item">
-                        <div class="meta-icon">
-                            <i class="fa fa-tag"></i>
-                        </div>
-                        <div class="meta-content">
-                            <span class="meta-label">Category:</span>
-                            <a href="shop.html" id="productCategory" class="meta-link">Electronics > Smartphones</a>
-                        </div>
-                    </div>
-                    <div class="meta-item">
-                        <div class="meta-icon">
-                            <i class="fa fa-barcode"></i>
-                        </div>
-                        <div class="meta-content">
-                            <span class="meta-label">Item ID:</span>
-                            <span class="meta-value" id="productItemNumber">000000000000</span>
-                        </div>
-                    </div>
-                </div>
-
-
 
                 <!-- Enhanced Price Section -->
                 <div class="product-price-section">
@@ -302,10 +280,6 @@
                             <button class="quantity-btn plus-btn" id="plusBtn">
                                 <i class="fa fa-plus"></i>
                             </button>
-                        </div>
-                        <div class="stock-info" id="stockAmountDisplay">
-                            <span class="stock-text">In Stock</span>
-                            <span class="stock-amount">(Max: 50)</span>
                         </div>
                     </div>
 

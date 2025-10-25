@@ -129,7 +129,7 @@ class FormValidator {
                 const result = this.validateField(field);
                 if (!result.valid) {
                     this.showError(field, result.message);
-                } else {
+        } else {
                     this.clearError(field);
                 }
             });

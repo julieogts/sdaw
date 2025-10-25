@@ -341,7 +341,7 @@ main::before {
     display: flex;
     align-items: center;
     gap: 1rem;
-    margin: 1.5rem 0;
+    margin: 0.5rem 0;
     padding: 1rem;
     background: linear-gradient(135deg, rgba(0, 200, 81, 0.1) 0%, rgba(0, 200, 81, 0.05) 100%);
     border-radius: 12px;
@@ -379,9 +379,9 @@ main::before {
 }
 
 .stock-count {
-    color: #666;
-    font-size: 0.9rem;
-    font-weight: 400;
+    color: #2c3e50;
+    font-size: 1.2rem;
+    font-weight: 600;
 }
 
 .stock-indicator.out-of-stock {
@@ -454,7 +454,7 @@ main::before {
 
 .product-filters {
     display: grid;
-    grid-template-columns: 1fr; /* single column by default */
+    grid-template-columns: 1fr 1fr; /* two columns for category and ID */
     gap: 2rem;
     position: relative;
     z-index: 2;
@@ -494,6 +494,38 @@ main::before {
     height: 2px;
     background: linear-gradient(135deg, #e63946 0%, #d62d20 100%);
     border-radius: 1px;
+}
+
+/* Category and ID styling */
+.category-link {
+    color: #2a6592;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1rem;
+    padding: 0.5rem 1rem;
+    background: rgba(42, 101, 146, 0.1);
+    border-radius: 8px;
+    border: 1px solid rgba(42, 101, 146, 0.2);
+    transition: all 0.3s ease;
+    display: inline-block;
+}
+
+.category-link:hover {
+    background: rgba(42, 101, 146, 0.2);
+    border-color: rgba(42, 101, 146, 0.4);
+    transform: translateY(-1px);
+}
+
+.id-value {
+    color: #666;
+    font-weight: 600;
+    font-size: 1rem;
+    padding: 0.5rem 1rem;
+    background: rgba(102, 102, 102, 0.1);
+    border-radius: 8px;
+    border: 1px solid rgba(102, 102, 102, 0.2);
+    display: inline-block;
+    font-family: 'Courier New', monospace;
 }
 
 .filter-select {
@@ -539,7 +571,7 @@ main::before {
 
 /* Enhanced Price Section */
 .product-price-section {
-    margin: 1.5rem 0;
+    margin: 0.5rem 0;
     padding: 1.5rem;
     background: linear-gradient(135deg, rgba(230, 57, 70, 0.1) 0%, rgba(214, 45, 32, 0.05) 100%);
     border-radius: 16px;
@@ -642,8 +674,8 @@ main::before {
 .quantity-section {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
-    margin: 2rem 0;
+    gap: 1rem;
+    margin: 0.5rem 0;
     padding: 1.5rem;
     background: rgba(255, 255, 255, 0.6);
     border-radius: 16px;
@@ -743,7 +775,7 @@ main::before {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 1.5rem;
-    margin: 2rem 0;
+    margin: 0.5rem 0;
 }
 
 .buy-now-btn, .add-to-cart-btn {
@@ -1057,7 +1089,7 @@ main::before {
     }
 
     .stock-count {
-        font-size: 0.8rem;
+        font-size: 1rem;
     }
 }
 
