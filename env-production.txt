@@ -1,0 +1,20 @@
+# Production Environment Configuration for Hostinger
+# Copy this to .env file on your Hostinger server
+
+# MongoDB Atlas Configuration
+MONGODB_URI=mongodb+srv://24uglyandrew:weaklings162@sanricosite.vgnc0qj.mongodb.net/
+DATABASE_NAME=MyProductsDb
+
+# JWT Secret for session tokens (CHANGE THIS TO A SECURE RANDOM STRING)
+JWT_SECRET=your_super_secure_jwt_secret_key_here_must_be_long_and_random_production
+
+# Email Configuration for n8n
+SENDER_EMAIL=sanricomercantileofficial@gmail.com
+N8N_WEBHOOK_URL=http://localhost:5678/webhook/send-verification-email
+
+# Server Configuration
+PORT=3000
+
+# Environment Mode
+NODE_ENV=production
+

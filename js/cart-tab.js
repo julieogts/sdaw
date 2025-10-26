@@ -274,7 +274,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (itemIndex > -1) {
                     // Check stock before updating
                     try {
-                        const response = await fetch(`http://localhost:3000/api/products/${itemId}`);
+                        const response = await fetch(`API_CONFIG.getApiUrl("")/products/${itemId}`);
                         const product = await response.json();
                         // Use stockQuantity if available, otherwise fallback to stock
                         const availableStock = (product.stockQuantity !== undefined) ? product.stockQuantity : (product.stock || 0);

@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="css/forms.css">
     <link rel="stylesheet" href="css/responsive.css">
     <link rel="stylesheet" href="css/header.css">
+    <script src="js/config.js"></script>
     <script src="js/headerSearch.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="icon" type="image/x-icon" href="images/favicon.ico">
@@ -661,7 +662,7 @@
         async function loadUserAddresses() {
             try {
                 // Fetch from backend API instead of localStorage
-                const response = await fetch('http://localhost:3000/api/user-addresses?userId=' + encodeURIComponent(currentUser.id));
+                const response = await fetch(API_CONFIG.getApiUrl('/user-addresses?userId=' + encodeURIComponent(currentUser.id)));
                 if (!response.ok) throw new Error('Failed to fetch addresses from server');
                 const addresses = await response.json();
                 // Map _id to id for frontend compatibility
@@ -775,7 +776,7 @@
                 return;
             }
             try {
-                const response = await fetch('http://localhost:3000/api/user-addresses/' + encodeURIComponent(addressId), {
+                const response = await fetch(API_CONFIG.getApiUrl('/user-addresses/' + encodeURIComponent(addressId)), {
                     method: 'DELETE'
                 });
                 if (!response.ok) throw new Error('Failed to delete address');
@@ -790,7 +791,7 @@
         // Toggle default address via API
         async function toggleDefault(addressId) {
             try {
-                const response = await fetch('http://localhost:3000/api/user-addresses/' + encodeURIComponent(addressId) + '/default', {
+                const response = await fetch(API_CONFIG.getApiUrl('/user-addresses/' + encodeURIComponent(addressId) + '/default'), {
                     method: 'PUT'
                 });
                 if (!response.ok) throw new Error('Failed to update default address');

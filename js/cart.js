@@ -174,7 +174,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const currentValue = parseInt(input.value) || 1;
         
         try {
-            const response = await fetch(`http://localhost:3000/api/products/${itemId}`);
+            const response = await fetch(`API_CONFIG.getApiUrl("")/products/${itemId}`);
             const product = await response.json();
             const availableStock = (() => {
                 const s = product.stock !== undefined ? product.stock : product.stockQuantity;
@@ -243,7 +243,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 newQuantity = 1;
             }
             
-            const response = await fetch(`http://localhost:3000/api/products/${id}`);
+            const response = await fetch(`API_CONFIG.getApiUrl("")/products/${id}`);
             const product = await response.json();
             const availableStock = (() => {
                 const s = product.stock !== undefined ? product.stock : product.stockQuantity;

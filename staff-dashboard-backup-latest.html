@@ -1106,7 +1106,7 @@
                 try {
                     // We'll use a dummy user ID to get overall statistics
                     // In a real system, you might want a dedicated staff statistics endpoint
-                    const response = await fetch('http://localhost:3000/api/orders/stats/staff-overview');
+                    const response = await fetch('API_CONFIG.getApiUrl("/orders/stats/staff-overview")');
                     
                     if (response.ok) {
                         this.comprehensiveStats = await response.json();
@@ -1125,7 +1125,7 @@
             async loadStatsFromAllCollections() {
                 try {
                     // Get orders from all collections
-                    const allOrdersResponse = await fetch('http://localhost:3000/api/orders');
+                    const allOrdersResponse = await fetch('API_CONFIG.getApiUrl("/orders")');
                     let allOrders = [];
                     
                     if (allOrdersResponse.ok) {
@@ -1156,7 +1156,7 @@
 
             async loadProducts() {
                 try {
-                    const response = await fetch('http://localhost:3000/api/products');
+                    const response = await fetch('API_CONFIG.getApiUrl("/products")');
                     if (!response.ok) throw new Error('Failed to fetch products');
                     
                     let products = await response.json();
@@ -1190,7 +1190,7 @@
             async loadOrders() {
                 try {
                     // Fetch orders from all collections (pending, accepted, delivered)
-                    const response = await fetch('http://localhost:3000/api/orders/all-staff');
+                    const response = await fetch('API_CONFIG.getApiUrl("/orders/all-staff")');
                     if (!response.ok) throw new Error('Failed to fetch orders');
                     
                     this.orders = await response.json();
@@ -2285,7 +2285,7 @@
                         updateData.image = previewImg.src;
                     }
                     
-                    const response = await fetch(`http://localhost:3000/api/products/${this.currentEditingProduct.id}`, {
+                    const response = await fetch(`API_CONFIG.getApiUrl("/products/${this.currentEditingProduct.id}")`, {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(updateData)
@@ -2460,7 +2460,7 @@
                         }
                         
                         // Fetch user addresses from the database
-                        const response = await fetch(`http://localhost:3000/api/user-addresses?userId=${userId}`);
+                        const response = await fetch(`API_CONFIG.getApiUrl("/user-addresses?userId=${userId}")`);
                         if (!response.ok) {
                             console.warn('Failed to fetch user addresses for resolution');
                             return address; // Return the raw address ID on fetch failure
@@ -2549,7 +2549,7 @@
                     }
                     
                     // Handle regular status updates within the same collection
-                    const response = await fetch(`http://localhost:3000/api/orders/${this.currentEditingOrder._id}/status`, {
+                    const response = await fetch(`API_CONFIG.getApiUrl("/orders/${this.currentEditingOrder._id}/status")`, {
                         method: 'PUT',
                         headers: {
                             'Content-Type': 'application/json',
@@ -2604,7 +2604,7 @@
                     delete acceptedOrder._id;
                     
                     // Step 1: Add to AcceptedOrders collection
-                    const addResponse = await fetch('http://localhost:3000/api/orders/accepted', {
+                    const addResponse = await fetch('API_CONFIG.getApiUrl("/orders/accepted")', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(acceptedOrder)
@@ -2618,7 +2618,7 @@
                     console.log('✅ Order added to AcceptedOrders:', addResult);
                     
                     // Step 2: Verify the order was added successfully
-                    const verifyResponse = await fetch(`http://localhost:3000/api/orders/accepted/${addResult.insertedId || addResult.orderId}`);
+                    const verifyResponse = await fetch(`API_CONFIG.getApiUrl("/orders/accepted/${addResult.insertedId") || addResult.orderId}`);
                     
                     if (!verifyResponse.ok) {
                         throw new Error('Failed to verify order in AcceptedOrders collection');
@@ -2627,7 +2627,7 @@
                     console.log('✅ Order verified in AcceptedOrders collection');
                     
                     // Step 3: Remove from PendingOrders collection
-                    const deleteResponse = await fetch(`http://localhost:3000/api/orders/pending/${order._id}`, {
+                    const deleteResponse = await fetch(`API_CONFIG.getApiUrl("/orders/pending/${order._id}")`, {
                         method: 'DELETE'
                     });
                     
@@ -2663,7 +2663,7 @@
                     delete deliveredOrder._id;
                     
                     // Step 1: Add to DeliveredOrders collection
-                    const addResponse = await fetch('http://localhost:3000/api/orders/delivered', {
+                    const addResponse = await fetch('API_CONFIG.getApiUrl("/orders/delivered")', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(deliveredOrder)
@@ -2677,7 +2677,7 @@
                     console.log('✅ Order added to DeliveredOrders:', addResult);
                     
                     // Step 2: Verify the order was added successfully
-                    const verifyResponse = await fetch(`http://localhost:3000/api/orders/delivered/${addResult.insertedId || addResult.orderId}`);
+                    const verifyResponse = await fetch(`API_CONFIG.getApiUrl("/orders/delivered/${addResult.insertedId") || addResult.orderId}`);
                     
                     if (!verifyResponse.ok) {
                         throw new Error('Failed to verify order in DeliveredOrders collection');
@@ -2686,7 +2686,7 @@
                     console.log('✅ Order verified in DeliveredOrders collection');
                     
                     // Step 3: Remove from AcceptedOrders collection
-                    const deleteResponse = await fetch(`http://localhost:3000/api/orders/accepted/${order._id}`, {
+                    const deleteResponse = await fetch(`API_CONFIG.getApiUrl("/orders/accepted/${order._id}")`, {
                         method: 'DELETE'
                     });
                     
@@ -2812,7 +2812,7 @@
                     console.log('📦 Stock updates to be applied:', stockUpdates);
                     
                     // Send bulk stock update request
-                    const response = await fetch('http://localhost:3000/api/products/bulk-stock', {
+                    const response = await fetch('API_CONFIG.getApiUrl("/products/bulk-stock")', {
                         method: 'PUT',
                         headers: {
                             'Content-Type': 'application/json',

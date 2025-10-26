@@ -18,7 +18,7 @@ async function loadProductDetails() {
     }
 
     try {
-        const response = await fetch(`http://localhost:3000/api/products/${productId}`);
+        const response = await fetch(`API_CONFIG.getApiUrl("")/products/${productId}`);
         
         if (!response.ok) {
             if (response.status === 404) {
@@ -233,7 +233,7 @@ async function addToCart() {
             return;
         }
 
-        const response = await fetch(`http://localhost:3000/api/products/${window.currentProduct.id}`);
+        const response = await fetch(`API_CONFIG.getApiUrl("")/products/${window.currentProduct.id}`);
         const productData = await response.json();
         
         if (productData.stock < quantity) {
@@ -514,7 +514,7 @@ async function loadRelatedProducts(currentProductId, category) {
     }
 
     try {
-        const response = await fetch('http://localhost:3000/api/products');
+        const response = await fetch('API_CONFIG.getApiUrl("")/products');
         if (!response.ok) {
             throw new Error('Failed to fetch products');
         }

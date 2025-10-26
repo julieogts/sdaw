@@ -16,6 +16,7 @@
     <link rel="stylesheet" href="css/header.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="js/config.js"></script>
     <script src="js/simple-auth-client.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/validation.js"></script>
@@ -1247,7 +1248,7 @@
                 }
 
                 // Fetch products from database
-                const response = await fetch('http://localhost:3000/api/products');
+                const response = await fetch(API_CONFIG.getApiUrl('/products'));
                 if (!response.ok) {
                     throw new Error('Failed to fetch products');
                 }

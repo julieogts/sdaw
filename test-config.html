@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Config Test</title>
+</head>
+<body>
+    <h1>API Config Test</h1>
+    <div id="results"></div>
+
+    <script src="js/config.js"></script>
+    <script>
+        function addResult(message, isSuccess = true) {
+            const div = document.createElement('div');
+            div.style.cssText = `margin: 10px 0; padding: 10px; border-radius: 5px; background-color: ${isSuccess ? '#d4edda' : '#f8d7da'}; color: ${isSuccess ? '#155724' : '#721c24'};`;
+            div.textContent = message;
+            document.getElementById('results').appendChild(div);
+        }
+
+        // Test if API_CONFIG is available
+        if (typeof API_CONFIG !== 'undefined') {
+            addResult('✅ API_CONFIG is loaded');
+            
+            // Test the base URL
+            const baseUrl = API_CONFIG.getBaseUrl();
+            addResult(`✅ Base URL: ${baseUrl}`);
+            
+            // Test the products API URL
+            const productsUrl = API_CONFIG.getApiUrl('/products');
+            addResult(`✅ Products API URL: ${productsUrl}`);
+            
+            // Test if it's using the correct URL for this environment
+            if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                if (productsUrl.includes('localhost:3000')) {
+                    addResult('✅ Correctly using localhost for local development', true);
+                } else {
+                    addResult('❌ Should be using localhost for local development', false);
+                }
+            } else {
+                if (productsUrl.includes('sanricomercantile.com')) {
+                    addResult('✅ Correctly using live domain for production', true);
+                } else {
+                    addResult('❌ Should be using live domain for production', false);
+                }
+            }
+        } else {
+            addResult('❌ API_CONFIG is not loaded! Check if js/config.js exists and is accessible.', false);
+        }
+    </script>
+</body>
+</html>

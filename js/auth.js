@@ -75,7 +75,7 @@ class Auth {
     static async staffLogin(staffId, password) {
         try {
             // Call the MongoDB-based staff login API
-            const response = await fetch('http://localhost:3000/api/staff/login', {
+            const response = await fetch('API_CONFIG.getApiUrl("")/staff/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -372,7 +372,7 @@ class Auth {
     static async getUserOrders(userId) {
         try {
             // Try to get from MongoDB first
-            const response = await fetch(`http://localhost:3000/api/orders/${userId}`);
+            const response = await fetch(`API_CONFIG.getApiUrl("")/orders/${userId}`);
             if (response.ok) {
                 const orders = await response.json();
                 return orders;
@@ -402,7 +402,7 @@ class Auth {
             
             if (orders[orderIndex] && orders[orderIndex]._id) {
                 // Update in MongoDB if order has MongoDB _id
-                const response = await fetch(`http://localhost:3000/api/orders/${orders[orderIndex]._id}/payment`, {
+                const response = await fetch(`API_CONFIG.getApiUrl("")/orders/${orders[orderIndex]._id}/payment`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json'
@@ -458,7 +458,7 @@ class Auth {
     
         try {
             // Save to MongoDB first
-            const response = await fetch('http://localhost:3000/api/orders', {
+            const response = await fetch('API_CONFIG.getApiUrl("")/orders', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -539,7 +539,7 @@ class Auth {
                 return { success: true, message: 'No orders to migrate', totalMigrated: 0 };
             }
             
-            const response = await fetch('http://localhost:3000/api/orders/migrate', {
+            const response = await fetch('API_CONFIG.getApiUrl("")/orders/migrate', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -597,7 +597,7 @@ class Auth {
      */
     static async getUserAddressesFromDB(userId) {
         try {
-            const response = await fetch(`http://localhost:3000/api/user-addresses?userId=${userId}`);
+            const response = await fetch(`API_CONFIG.getApiUrl("")/user-addresses?userId=${userId}`);
             if (!response.ok) throw new Error('Failed to fetch addresses');
             let addresses = await response.json();
             // Sort: default first, then by createdAt

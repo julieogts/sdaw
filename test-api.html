@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Test Page</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-result { margin: 10px 0; padding: 10px; border-radius: 5px; }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>API Connection Test</h1>
+    <p>This page tests if the API is accessible from the browser.</p>
+    
+    <button onclick="testDebugAPI()">Test Debug API</button>
+    <button onclick="testProductsAPI()">Test Products API</button>
+    <button onclick="testWithFetch()">Test with Fetch (Alternative)</button>
+    
+    <div id="results"></div>
+
+    <script>
+        function addResult(message, isSuccess = true) {
+            const div = document.createElement('div');
+            div.className = `test-result ${isSuccess ? 'success' : 'error'}`;
+            div.textContent = message;
+            document.getElementById('results').appendChild(div);
+        }
+
+        async function testDebugAPI() {
+            try {
+                addResult('Testing debug API...', true);
+                const response = await fetch('API_CONFIG.getApiUrl("/debug/test")');
+                if (response.ok) {
+                    const data = await response.json();
+                    addResult(`✅ Debug API Success: ${data.message}`, true);
+                } else {
+                    addResult(`❌ Debug API Error: ${response.status}`, false);
+                }
+            } catch (error) {
+                addResult(`❌ Debug API Failed: ${error.message}`, false);
+            }
+        }
+
+        async function testProductsAPI() {
+            try {
+                addResult('Testing products API...', true);
+                const response = await fetch('API_CONFIG.getApiUrl("/products")');
+                if (response.ok) {
+                    const products = await response.json();
+                    addResult(`✅ Products API Success: Found ${products.length} products`, true);
+                } else {
+                    addResult(`❌ Products API Error: ${response.status}`, false);
+                }
+            } catch (error) {
+                addResult(`❌ Products API Failed: ${error.message}`, false);
+            }
+        }
+
+        async function testWithFetch() {
+            try {
+                addResult('Testing with XMLHttpRequest (alternative)...', true);
+                const xhr = new XMLHttpRequest();
+                xhr.open('GET', 'API_CONFIG.getApiUrl("/debug/test")');
+                xhr.onload = function() {
+                    if (xhr.status === 200) {
+                        addResult('✅ XMLHttpRequest Success!', true);
+                    } else {
+                        addResult(`❌ XMLHttpRequest Error: ${xhr.status}`, false);
+                    }
+                };
+                xhr.onerror = function() {
+                    addResult('❌ XMLHttpRequest Failed: Network error', false);
+                };
+                xhr.send();
+            } catch (error) {
+                addResult(`❌ XMLHttpRequest Failed: ${error.message}`, false);
+            }
+        }
+
+        // Auto-test on page load
+        window.onload = function() {
+            addResult('Page loaded. Click buttons above to test API connections.', true);
+        };
+    </script>
+</body>
+</html>
+

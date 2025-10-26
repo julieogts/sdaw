@@ -1184,7 +1184,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             try {
                 // First try staff login endpoint
-                let response = await fetch('http://localhost:3000/api/staff/login', {
+                let response = await fetch('API_CONFIG.getApiUrl("")/staff/login', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -1196,7 +1196,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // If staff login fails, try regular login and check if user is staff
                 if (!response.ok) {
-                    response = await fetch('http://localhost:3000/api/auth/login', {
+                    response = await fetch('API_CONFIG.getApiUrl("")/auth/login', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'

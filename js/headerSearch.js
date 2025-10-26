@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Load products from API
     async function loadProducts() {
         try {
-            const response = await fetch('http://localhost:3000/api/products');
+            const response = await fetch(API_CONFIG.getApiUrl('/products'));
             if (!response.ok) {
                 throw new Error('Failed to fetch products');
             }
